@@ -1,0 +1,396 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+*'
+  workflow_dispatch:
+    inputs:
+      linux_only:
+        description: Only rebuild Linux and then refresh release checksums
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    name: Build (${{ matrix.name }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(github.event.inputs.linux_only == 'true' && '[{"name":"Linux x64","os":"ubuntu-22.04","target":"x86_64-unknown-linux-gnu","rustTargets":"x86_64-unknown-linux-gnu","args":"--target x86_64-unknown-linux-gnu"}]' || '[{"name":"Linux x64","os":"ubuntu-22.04","target":"x86_64-unknown-linux-gnu","rustTargets":"x86_64-unknown-linux-gnu","args":"--target x86_64-unknown-linux-gnu"},{"name":"Windows x64","os":"windows-2025","target":"x86_64-pc-windows-msvc","rustTargets":"x86_64-pc-windows-msvc","args":"--target x86_64-pc-windows-msvc"},{"name":"macOS Apple Silicon","os":"macos-15","target":"aarch64-apple-darwin","rustTargets":"aarch64-apple-darwin","args":"--target aarch64-apple-darwin"},{"name":"macOS Intel","os":"macos-15-intel","target":"x86_64-apple-darwin","rustTargets":"x86_64-apple-darwin","args":"--target x86_64-apple-darwin"},{"name":"macOS Universal","os":"macos-15","target":"universal-apple-darwin","rustTargets":"aarch64-apple-darwin,x86_64-apple-darwin","args":"--target universal-apple-darwin"}]') }}
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.19.0
+          cache: pnpm
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.rustTargets }}
+
+      - name: Install Linux dependencies
+        if: runner.os == 'Linux'
+        run: |
+          # Azure-hosted runners sometimes retain an unreachable Azure mirror.
+          # Use the canonical Ubuntu archive so a transient mirror outage cannot
+          # leave the release blocked before compilation even starts.
+          sudo find /etc/apt -type f \( -name '*.list' -o -name '*.sources' \) -exec sed -i 's|http://azure.archive.ubuntu.com/ubuntu|https://archive.ubuntu.com/ubuntu|g' {} +
+          sudo apt-get update -o Acquire::Retries=3
+          sudo apt-get install -y libarchive-tools libayatana-appindicator3-dev librsvg2-dev libwebkit2gtk-4.1-dev
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Enforce release contract
+        shell: bash
+        env:
+          UPDATER_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+        run: |
+          version="$(node -p 'require("./src-tauri/tauri.conf.json").version')"
+          expected="v$version"
+          if [ "$GITHUB_REF_TYPE" = tag ] && [ "$GITHUB_REF_NAME" != "$expected" ]; then
+            echo "::error title=Version mismatch::Tag $GITHUB_REF_NAME does not match $expected."
+            exit 1
+          fi
+          test -s ".github/release-notes/$version.zh-CN.md" || { echo "::error::Missing detailed Chinese release notes for $version"; exit 1; }
+          test -s ".github/release-notes/$version.en.md" || { echo "::error::Missing English release notes for $version"; exit 1; }
+          node .github/scripts/release-notes.mjs >/dev/null
+          if [ -z "$UPDATER_KEY" ]; then
+            echo "::error title=Updater signing required::TAURI_SIGNING_PRIVATE_KEY must be configured before a formal release."
+            exit 1
+          fi
+
+      # This step exists rather than an `env:` block on
+      # the build step. An unset secret interpolates to an empty string, and the
+      # bundler reads these with `var_os` — so an empty APPLE_ID is not an absent
+      # one. It is a set of notarization credentials whose Apple ID happens to be
+      # blank, which it will submit, and Apple will reject.
+      - name: Set up macOS code signing
+        if: runner.os == 'macOS'
+        env:
+          # The signing half is these two and nothing else. The bundler imports
+          # the certificate into a throwaway keychain of its own, reads the
+          # signing identity back out of the certificate, and signs against that
+          # keychain by path — so there is nothing to import here, and no
+          # identity to spell out and keep in step with the certificate.
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          # An app-specific password, not the Apple account's own. The App Store
+          # Connect API key (APPLE_API_KEY / APPLE_API_ISSUER / APPLE_API_KEY_PATH)
+          # is the other set the bundler accepts, and wants the key on disk first.
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          set -u
+          if [ -z "$APPLE_CERTIFICATE" ]; then
+            echo "MACOS_SIGNING_ENABLED=false" >> "$GITHUB_ENV"
+            echo "::warning title=Unsigned macOS build::Apple Developer ID credentials are not configured. The updater artifact will still carry its required Tauri signature, but Gatekeeper may require manual approval."
+            exit 0
+          fi
+          if [ -z "$APPLE_CERTIFICATE_PASSWORD" ]; then
+            echo "::error title=Incomplete macOS credentials::APPLE_CERTIFICATE is set but APPLE_CERTIFICATE_PASSWORD is empty. The bundler needs both to open the .p12, and it will not fall back to an unsigned build."
+            exit 1
+          fi
+          if [ -z "$APPLE_ID" ] || [ -z "$APPLE_PASSWORD" ] || [ -z "$APPLE_TEAM_ID" ]; then
+            # Refused in the first ten seconds rather than after a half-hour
+            # build. An app that is signed but was never notarized is still an
+            # app Gatekeeper blocks, so this combination has nothing to ship.
+            echo "::error title=Incomplete macOS credentials::APPLE_CERTIFICATE is set, but APPLE_ID, APPLE_PASSWORD and APPLE_TEAM_ID are not all present. Signing without notarizing produces a build Gatekeeper still refuses to open."
+            exit 1
+          fi
+
+          # Written with a delimiter rather than KEY=value because a base64 blob
+          # produced without -w0 arrives line-wrapped.
+          {
+            echo "APPLE_CERTIFICATE<<DSH_SIGNING_SECRET"
+            printf '%s\n' "$APPLE_CERTIFICATE"
+            echo "DSH_SIGNING_SECRET"
+            echo "APPLE_CERTIFICATE_PASSWORD<<DSH_SIGNING_SECRET"
+            printf '%s\n' "$APPLE_CERTIFICATE_PASSWORD"
+            echo "DSH_SIGNING_SECRET"
+            echo "APPLE_ID=$APPLE_ID"
+            echo "APPLE_PASSWORD<<DSH_SIGNING_SECRET"
+            printf '%s\n' "$APPLE_PASSWORD"
+            echo "DSH_SIGNING_SECRET"
+            echo "APPLE_TEAM_ID=$APPLE_TEAM_ID"
+            echo "MACOS_SIGNING_ENABLED=true"
+          } >> "$GITHUB_ENV"
+          # No values: every one of them is a secret, and would print as ***.
+          echo "A certificate and notarization credentials are configured; this build will be signed, notarized and stapled."
+
+      - name: Set up Windows code signing
+        if: runner.os == 'Windows'
+        shell: bash
+        env:
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          # Not secrets, and not committed either: these three address one
+          # signing account, and the account belongs to whoever cuts the
+          # release. Repository variables let a fork sign with its own without
+          # this file naming anybody's.
+          SIGNING_ENDPOINT: ${{ vars.AZURE_SIGNING_ENDPOINT }}
+          SIGNING_ACCOUNT: ${{ vars.AZURE_SIGNING_ACCOUNT }}
+          SIGNING_PROFILE: ${{ vars.AZURE_SIGNING_PROFILE }}
+        run: |
+          set -u
+          if [ -z "$AZURE_CLIENT_ID" ]; then
+            echo "WINDOWS_SIGNING_ENABLED=false" >> "$GITHUB_ENV"
+            echo "::warning title=Unsigned Windows build::Azure Artifact Signing credentials are not configured. The updater artifact will still carry its required Tauri signature, but Windows may show an unknown-publisher warning."
+            exit 0
+          fi
+
+          missing=""
+          [ -n "$AZURE_CLIENT_SECRET" ] || missing="$missing AZURE_CLIENT_SECRET"
+          [ -n "$AZURE_TENANT_ID" ] || missing="$missing AZURE_TENANT_ID"
+          [ -n "$SIGNING_ENDPOINT" ] || missing="$missing AZURE_SIGNING_ENDPOINT"
+          [ -n "$SIGNING_ACCOUNT" ] || missing="$missing AZURE_SIGNING_ACCOUNT"
+          [ -n "$SIGNING_PROFILE" ] || missing="$missing AZURE_SIGNING_PROFILE"
+          if [ -n "$missing" ]; then
+            echo "::error title=Incomplete Windows signing setup::AZURE_CLIENT_ID is set, but these are empty:$missing. Azure Artifact Signing needs the AZURE_CLIENT_* and AZURE_TENANT_ID secrets to authenticate, and the AZURE_SIGNING_* repository variables to say which account and certificate profile to sign with."
+            exit 1
+          fi
+
+          # Signs with a certificate that is never on the runner, which is the
+          # whole reason for preferring this to an EV token. Windows runners
+          # already carry the .NET runtime, the Azure CLI and the signtool it
+          # leans on.
+          cargo install artifact-signing-cli --locked
+
+          # Picked up on its own: the CLI merges tauri.windows.conf.json into the
+          # base configuration for every Windows build, with no flag to pass and
+          # no path to resolve. Written here rather than committed because a
+          # machine without the signing tool installed would then fail every
+          # local `tauri build`.
+          #
+          # Built through JSON.stringify rather than pasted into a template, so
+          # an account name with a character that means something to JSON is
+          # escaped instead of producing a config file that will not parse.
+          node --input-type=module -e '
+            import { writeFileSync } from "node:fs"
+            const { SIGNING_ENDPOINT, SIGNING_ACCOUNT, SIGNING_PROFILE } = process.env
+            const config = {
+              bundle: {
+                windows: {
+                  // The object form rather than the string one: the description
+                  // carries a space, and the string form is split on spaces.
+                  // -d is what names the app in the UAC prompt an installer
+                  // raises; unset, that prompt reads as a random string.
+                  signCommand: {
+                    cmd: "artifact-signing-cli",
+                    args: [
+                      "-e", SIGNING_ENDPOINT,
+                      "-a", SIGNING_ACCOUNT,
+                      "-c", SIGNING_PROFILE,
+                      "-d", "DSH Studio",
+                      "%1",
+                    ],
+                  },
+                },
+              },
+            }
+            writeFileSync("src-tauri/tauri.windows.conf.json", JSON.stringify(config, null, 2) + "\n")
+            console.log(`signing against ${SIGNING_ACCOUNT}/${SIGNING_PROFILE}`)
+          '
+
+          {
+            echo "AZURE_CLIENT_ID=$AZURE_CLIENT_ID"
+            echo "AZURE_CLIENT_SECRET<<DSH_SIGNING_SECRET"
+            printf '%s\n' "$AZURE_CLIENT_SECRET"
+            echo "DSH_SIGNING_SECRET"
+            echo "AZURE_TENANT_ID=$AZURE_TENANT_ID"
+            echo "WINDOWS_SIGNING_ENABLED=true"
+          } >> "$GITHUB_ENV"
+
+      - name: Prepare release notes
+        id: release_notes
+        shell: bash
+        run: |
+          {
+            echo 'body<<DSH_RELEASE_NOTES'
+            node .github/scripts/release-notes.mjs
+            echo 'DSH_RELEASE_NOTES'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Download previous Windows installer for upgrade smoke
+        if: runner.os == 'Windows' && github.ref_type == 'tag'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          previous="$(gh release list --repo "$GITHUB_REPOSITORY" --limit 20 --json tagName --jq '.[].tagName' | grep -Fxv "$GITHUB_REF_NAME" | head -n 1)"
+          if [ -z "$previous" ]; then
+            echo "No previous release exists; this is the only release where upgrade smoke is not applicable."
+            exit 0
+          fi
+          mkdir -p previous-release
+          gh release download "$previous" --repo "$GITHUB_REPOSITORY" --pattern '*-setup.exe' --dir previous-release
+          installer="$(find previous-release -maxdepth 1 -type f -name '*-setup.exe' -print -quit)"
+          test -n "$installer"
+          echo "DSH_PREVIOUS_INSTALLER=$PWD/$installer" >> "$GITHUB_ENV"
+          echo "Will verify an in-place upgrade from $previous."
+
+      - uses: tauri-apps/tauri-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          # This repository's updater key is encrypted with an empty password.
+          # Supplying it explicitly keeps the bundler non-interactive in CI.
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ''
+        with:
+          tagName: v__VERSION__
+          releaseName: DSH Studio v__VERSION__
+          releaseBody: ${{ steps.release_notes.outputs.body }}
+          releaseDraft: false
+          prerelease: false
+          uploadUpdaterJson: true
+          updaterJsonPreferNsis: true
+          args: ${{ matrix.args }}
+
+      - name: Smoke test packaged application
+        shell: bash
+        run: node .github/scripts/verify-packaged-app.mjs "src-tauri/target/${{ matrix.target }}/release/bundle"
+
+      - name: Publish Windows portable executable
+        if: runner.os == 'Windows'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ "$GITHUB_REF_TYPE" = tag ]; then
+            tag="$GITHUB_REF_NAME"
+          else
+            tag="v$(node -p 'require("./src-tauri/tauri.conf.json").version')"
+          fi
+          node .github/scripts/stage-portable.mjs "src-tauri/target/${{ matrix.target }}/release" portable-assets
+          portable="$(find portable-assets -maxdepth 1 -type f -name '*-portable.exe' -print -quit)"
+          test -n "$portable"
+          "$portable" --smoke-test
+          gh release upload "$tag" "$portable" --repo "$GITHUB_REPOSITORY" --clobber
+
+      - name: Prepare verified Full / Offline runtime
+        if: matrix.target != 'universal-apple-darwin'
+        shell: bash
+        run: node .github/scripts/prepare-offline-runtime.mjs "${{ matrix.target }}" src-tauri/runtime-cache/offline
+
+      - name: Build Full / Offline packages
+        if: matrix.target != 'universal-apple-darwin'
+        shell: bash
+        env:
+          DSH_STUDIO_EDITION: full
+          CARGO_TARGET_DIR: ${{ github.workspace }}/src-tauri/target-full
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ''
+        run: pnpm tauri build --target "${{ matrix.target }}" --config src-tauri/tauri.full.conf.json
+
+      - name: Verify Full / Offline packaged application and payload
+        if: matrix.target != 'universal-apple-darwin'
+        shell: bash
+        env:
+          DSH_EXPECT_OFFLINE: '1'
+        run: node .github/scripts/verify-packaged-app.mjs "src-tauri/target-full/${{ matrix.target }}/release/bundle"
+
+      - name: Upload Full / Offline packages
+        if: matrix.target != 'universal-apple-darwin'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ "$GITHUB_REF_TYPE" = tag ]; then
+            tag="$GITHUB_REF_NAME"
+          else
+            tag="v$(node -p 'require("./src-tauri/tauri.conf.json").version')"
+          fi
+          rm -rf full-assets
+          node .github/scripts/stage-full-assets.mjs "src-tauri/target-full/${{ matrix.target }}/release/bundle" "${{ matrix.target }}" full-assets
+          gh release upload "$tag" full-assets/* --repo "$GITHUB_REPOSITORY" --clobber
+
+      - name: Verify Windows Authenticode signatures
+        if: runner.os == 'Windows' && env.WINDOWS_SIGNING_ENABLED == 'true'
+        shell: pwsh
+        run: |
+          $files = Get-ChildItem -Path src-tauri/target,src-tauri/target-full,portable-assets -Recurse -File | Where-Object { ($_.FullName -match '\\bundle\\' -or $_.FullName -match '\\portable-assets\\') -and $_.Extension -in '.exe', '.msi' }
+          if (-not $files) { throw 'No Windows installer was produced.' }
+          foreach ($file in $files) {
+            $signature = Get-AuthenticodeSignature -LiteralPath $file.FullName
+            if ($signature.Status -ne 'Valid') { throw "$($file.Name) is not Authenticode signed: $($signature.Status)" }
+          }
+
+      - name: Verify macOS signature, notarization and staple
+        if: runner.os == 'macOS' && env.MACOS_SIGNING_ENABLED == 'true'
+        run: |
+          set -eu
+          apps=0
+          images=0
+          while IFS= read -r -d '' app; do
+            codesign --verify --deep --strict --verbose=2 "$app"
+            spctl --assess --type execute --verbose=2 "$app"
+            apps=$((apps + 1))
+          done < <(find src-tauri/target src-tauri/target-full -path '*/release/bundle/macos/*.app' -print0)
+          while IFS= read -r -d '' dmg; do
+            xcrun stapler validate "$dmg"
+            images=$((images + 1))
+          done < <(find src-tauri/target src-tauri/target-full -path '*/release/bundle/dmg/*.dmg' -print0)
+          expected=2
+          if [ "${{ matrix.target }}" = "universal-apple-darwin" ]; then expected=1; fi
+          test "$apps" -eq "$expected" && test "$images" -eq "$expected"
+
+  # Signatures say who built an installer; these say the bytes are the ones that
+  # were built. Worth having for the mirrors this project will be downloaded
+  # from, where the file someone gets is not necessarily the file GitHub served.
+  checksums:
+    name: Publish checksums
+    needs: publish
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Publish the typed Protocol 3 SDK package
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ "$GITHUB_REF_TYPE" = tag ]; then
+            tag="$GITHUB_REF_NAME"
+          else
+            tag="v$(node -p 'require("./src-tauri/tauri.conf.json").version')"
+          fi
+          mkdir -p sdk-assets
+          npm pack ./sdk --pack-destination sdk-assets
+          sdk_package="$(find sdk-assets -maxdepth 1 -type f -name '*.tgz' -print -quit)"
+          test -n "$sdk_package"
+          gh release upload "$tag" "$sdk_package" --repo "$GITHUB_REPOSITORY" --clobber
+
+      - name: Sum every artifact on the release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ "$GITHUB_REF_TYPE" = tag ]; then
+            tag="$GITHUB_REF_NAME"
+          else
+            # A manual run has no tag to read, and the release was named from the
+            # version in the configuration — so that is where to look for it.
+            tag="v$(node -p 'require("./src-tauri/tauri.conf.json").version')"
+          fi
+          echo "Summing the artifacts on $tag"
+
+          gh release download "$tag" --repo "$GITHUB_REPOSITORY" --dir artifacts --clobber
+          node .github/scripts/verify-release-assets.mjs artifacts
+          # Not its own subject: a previous run may have left one up there, and
+          # a file cannot state its own digest.
+          rm -f artifacts/SHA256SUMS.txt
+          ( cd artifacts && sha256sum -- * ) > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+          gh release upload "$tag" SHA256SUMS.txt --repo "$GITHUB_REPOSITORY" --clobber

@@ -1,0 +1,47 @@
+{
+  "version": "0.8.0",
+  "description": "Native desktop shell for DeepSeek Harness.",
+  "homepage": "https://github.com/Moresyl/dsh-studio",
+  "license": "MIT",
+  "notes": [
+    "DSH Studio downloads a Node.js runtime on first run if the machine has none.",
+    "The harness listens on 127.0.0.1 only, on a port the kernel assigns.",
+    "The harness and any downloaded runtime live in %LOCALAPPDATA%\\dsh-studio, which uninstalling does not remove."
+  ],
+  "architecture": {
+    "64bit": {
+      "url": "https://github.com/Moresyl/dsh-studio/releases/download/v0.8.0/DSH.Studio_0.8.0_x64-setup.exe#/setup.exe",
+      "hash": "616e290fe88b15fca5367cda96bfe7fc2adfbde6b20f1ce05364ef56a5206c07"
+    }
+  },
+  "installer": {
+    "script": [
+      "Start-Process -FilePath \"$dir\\setup.exe\" -ArgumentList \"/S /NS /D=$dir\" -Wait",
+      "Remove-Item -Force \"$dir\\setup.exe\""
+    ]
+  },
+  "uninstaller": {
+    "script": [
+      "if (Test-Path \"$dir\\uninstall.exe\") {",
+      "  Start-Process -FilePath \"$dir\\uninstall.exe\" -ArgumentList \"/S _?=$dir\" -Wait",
+      "}"
+    ]
+  },
+  "bin": "dsh-studio.exe",
+  "shortcuts": [
+    [
+      "dsh-studio.exe",
+      "DSH Studio"
+    ]
+  ],
+  "checkver": {
+    "github": "https://github.com/Moresyl/dsh-studio"
+  },
+  "autoupdate": {
+    "architecture": {
+      "64bit": {
+        "url": "https://github.com/Moresyl/dsh-studio/releases/download/v$version/DSH.Studio_$version_x64-setup.exe#/setup.exe"
+      }
+    }
+  }
+}

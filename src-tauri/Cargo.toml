@@ -1,0 +1,169 @@
+[workspace]
+members = [".", "crates/proc-guard", "crates/node-runtime"]
+
+[workspace.package]
+version = "0.8.0"
+edition = "2021"
+license = "MIT"
+repository = "https://github.com/Moresyl/dsh-studio"
+
+[workspace.dependencies]
+proc-guard = { path = "crates/proc-guard" }
+node-runtime = { path = "crates/node-runtime" }
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", features = ["preserve_order"] }
+thiserror = "2"
+tokio = { version = "1", features = ["full", "parking_lot"] }
+url = "2"
+
+[package]
+name = "dsh-studio"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Native desktop studio for DeepSeek Harness"
+
+[lib]
+name = "dsh_studio_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[[bin]]
+name = "dsh-studio"
+path = "src/main.rs"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+proc-guard.workspace = true
+node-runtime.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+tokio.workspace = true
+url.workspace = true
+semver = "1"
+regex = "1"
+# `macos-private-api` is what makes `.transparent()` exist on macOS, and a
+# transparent window is the prerequisite for every backdrop material — see
+# `src/material.rs`. It is a private-API opt-in, so it is also declared in
+# `tauri.conf.json`; the two have to agree or the build fails.
+tauri = { version = "2", features = [
+  "tray-icon",
+  "image-png",
+  "macos-private-api",
+] }
+tauri-plugin-dialog = "2"
+# Reading the clipboard, and only that. A webview can write to the clipboard from
+# a click on its own, but reading it is a permission a Chromium host answers with
+# a prompt of its own — and a terminal pane whose Paste opens a browser
+# permission dialog is not a terminal pane. Writing stays with the webview.
+tauri-plugin-clipboard-manager = "2"
+tauri-plugin-opener = "2"
+tauri-plugin-process = "2"
+# `deep-link` is what makes the second launch hand its URL over instead of
+# swallowing it: on Windows and Linux the system answers a `dsh://` link by
+# starting the app again with the URL as an argument, and this app folds second
+# launches into the running one. Without the feature the fold would be where the
+# link goes to die.
+tauri-plugin-single-instance = { version = "2", features = ["deep-link"] }
+tauri-plugin-deep-link = "2"
+# A notification is the one thing the desktop can do that a page in a frame
+# cannot: outlive the window being looked at. It is here for the service
+# interface — see `src/desktop/mod.rs` — rather than for the shell's own UI,
+# which has a status bar and does not need to interrupt anybody.
+tauri-plugin-notification = "2"
+# Registering a login item is three unrelated pieces of platform trivia — a
+# registry value, a launch agent, a `.desktop` file — and getting any of them
+# subtly wrong means an app that either never starts or cannot be stopped from
+# starting. See `src/startup.rs`, which is the only caller.
+tauri-plugin-autostart = "2"
+# A hotkey that works while another application has the keyboard is the one
+# thing this shell cannot ask the webview for: the key never reaches the page.
+tauri-plugin-global-shortcut = "2"
+tauri-plugin-updater = "2"
+dirs = "6"
+sys-locale = "0.3"
+# Provisioning a Node runtime needs an HTTPS client that does not depend on Node
+# already being here. Every one of these is already linked by
+# `tauri-plugin-updater`, so declaring them directly costs no binary size — the
+# features below are the ones that plugin already turns on, kept in step so
+# cargo unifies rather than compiling a second configuration.
+reqwest = { version = "0.13", default-features = false, features = [
+  "rustls-no-provider",
+  "stream",
+] }
+# `rustls-no-provider` leaves the cipher suites to the application. The plugin
+# picks ring and installs it as the process default; this declares the same one
+# so both callers share a provider instead of racing to install two.
+rustls = { version = "0.23", default-features = false, features = ["ring"] }
+sha2 = "0.10"
+# Pairing secrets come from the OS entropy source, never from a PRNG we seed.
+getrandom = "0.3"
+# QR encoding only; the modules are rendered as SVG by the frontend, so nothing
+# here has to draw or write an image.
+qrcodegen = "1.8"
+# A real pty, so the shell in the terminal pane believes it is talking to a
+# terminal — line editing, colour, Ctrl-C and progress bars all depend on that,
+# and a plain piped stdio gets none of them. ConPTY on Windows, forkpty
+# elsewhere, behind one API. This is wezterm's own pty layer.
+portable-pty = "0.9"
+ruzstd = { version = "0.9", default-features = false, features = ["std"] }
+# Gzipped tar, which this reads on every platform and for two unrelated reasons:
+# Node ships as one everywhere but Windows (`src/node/archive.rs`), and an npm
+# package is one everywhere full stop — which is what the plugin panel opens
+# when a plugin arrives as a file instead of from a registry
+# (`src/plugins/archive.rs`).
+flate2 = "1"
+tar = "0.4"
+# Diagnostic support archives are written on every platform, while the same
+# reader also unpacks official Node zip archives on Windows.
+zip = { version = "4", default-features = false, features = ["deflate-flate2"] }
+# Market images are decoded and re-encoded before crossing into the WebView;
+# this strips metadata and rejects files that only claim to be images.
+image = { version = "0.25", default-features = false, features = ["jpeg", "png", "webp"] }
+base64 = "0.22"
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.61", features = [
+  "Win32_Foundation",
+  "Win32_Storage_FileSystem",
+  "Win32_System_Console",
+  "Win32_System_Diagnostics_Debug",
+  "Win32_System_Kernel",
+  "Win32_System_Memory",
+  "Win32_System_Threading",
+  "Win32_System_WindowsProgramming",
+] }
+# Which backdrop the compositor understands is a build-number question, and it
+# has to be answered before the window is built. Already linked by
+# `window-vibrancy`, which tauri pulls in for the effects themselves, so asking
+# for it directly costs no binary size.
+windows-version = "0.1"
+
+[profile.dev]
+# Match CCHub: optimized dev builds have tripped intermittent MSVC linker
+# failures (`anon.*.llvm.*` unresolved symbols), so the optimizer stays off here.
+# Everything else is left at cargo's dev defaults — a single codegen unit with
+# incremental compilation disabled bought nothing at `opt-level = 0` and cost
+# every rebuild a full one.
+opt-level = 0
+
+[profile.release]
+codegen-units = 1
+lto = "fat"
+opt-level = "s"
+panic = "unwind"
+strip = "symbols"
+incremental = false
+debug = false
+overflow-checks = false
+
+[profile.release.package."*"]
+opt-level = "s"
+codegen-units = 1
+
+[profile.release.build-override]
+opt-level = 0
+codegen-units = 256
