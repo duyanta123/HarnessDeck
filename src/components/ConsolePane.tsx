@@ -71,7 +71,7 @@ export function ConsolePane() {
             <BrandMark size={38} className="rounded-[9px] shadow-lift" />
             <div className="flex min-w-0 flex-col gap-1">
               <h1 className="text-[15px] leading-none font-semibold tracking-[-0.01em] text-text">
-                DSH Studio
+                HarnessDeck
               </h1>
               <p className="flex items-center gap-1.5 text-[12px] leading-none text-muted">
                 <StatusDot tone={toneOf(status)} size={6} />

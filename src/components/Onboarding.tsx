@@ -80,7 +80,7 @@ export function Onboarding() {
               <h1 className="text-[15px] leading-none font-semibold tracking-[-0.01em] text-text">
                 {t('guide.welcome')}
               </h1>
-              <p className="truncate text-[12px] leading-none text-muted">DSH Studio</p>
+              <p className="truncate text-[12px] leading-none text-muted">HarnessDeck</p>
             </div>
           </div>
 

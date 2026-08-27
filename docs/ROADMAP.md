@@ -1,4 +1,4 @@
-# DSH Studio roadmap and current benchmark
+# HarnessDeck roadmap and current benchmark
 
 [简体中文](ROADMAP.zh-CN.md)
 
@@ -9,7 +9,7 @@ Updated 2026-08-25. The refreshed benchmark head is
 package identifies itself as 2.0.3 even though the preceding verified snapshot
 `bd5ba85a275258318134632b3cc13d6b5ea8088b` identified itself as Benchmark
 2.0.4, so this comparison uses commit identity rather than treating the
-non-monotonic package field as a release ordering. The DSH Studio comparison
+non-monotonic package field as a release ordering. The HarnessDeck comparison
 started at `9d608e7245e74662a67fe754222fd1b845270092`.
 
 This document avoids volatile star/download counts and never treats pipeline
@@ -17,7 +17,7 @@ support as proof that an external channel or platform signature is live.
 
 ## Summary
 
-DSH Studio is no longer catching up to a window wrapper. It covers
+HarnessDeck is no longer catching up to a window wrapper. It covers
 Windows/macOS/Linux; Lite and verified Full/Offline packages; a plugin market;
 authenticated mobile remote access; Profiles; PTY terminal; multiple windows;
 session search, usage/cost and export; command palette; diagnostics; and bounded
@@ -34,7 +34,7 @@ The remaining gaps are concentrated in:
 
 ## Current capability matrix
 
-| Capability              | Benchmark head `87047b54`                 | DSH Studio now                                                                                                                         |
+| Capability              | Benchmark head `87047b54`                 | HarnessDeck now                                                                                                                         |
 | ----------------------- | ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
 | No system Node required | Bundled Electron/runtime                  | Lite downloads and verifies official Node; Full carries SHA-256-pinned Node, Harness and pnpm                                          |
 | Real runtime gate       | Profile boot smoke                        | Cold-installs the full 511-package graph and boots the real Profile, Loader, Web server and Host probe on Windows/Linux/macOS CI       |

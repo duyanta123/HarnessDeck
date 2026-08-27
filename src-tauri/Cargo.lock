@@ -958,49 +958,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "dsh-studio"
-version = "0.8.0"
-dependencies = [
- "base64 0.22.1",
- "dirs 6.0.0",
- "flate2",
- "getrandom 0.3.4",
- "image",
- "node-runtime",
- "portable-pty",
- "proc-guard",
- "qrcodegen",
- "regex",
- "reqwest",
- "rustls",
- "ruzstd",
- "semver",
- "serde",
- "serde_json",
- "sha2",
- "sys-locale",
- "tar",
- "tauri",
- "tauri-build",
- "tauri-plugin-autostart",
- "tauri-plugin-clipboard-manager",
- "tauri-plugin-deep-link",
- "tauri-plugin-dialog",
- "tauri-plugin-global-shortcut",
- "tauri-plugin-notification",
- "tauri-plugin-opener",
- "tauri-plugin-process",
- "tauri-plugin-single-instance",
- "tauri-plugin-updater",
- "thiserror 2.0.20",
- "tokio",
- "url",
- "windows-sys 0.61.2",
- "windows-version",
- "zip",
-]
-
-[[package]]
 name = "dtoa"
 version = "1.0.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1682,6 +1639,49 @@ dependencies = [
  "cfg-if",
  "crunchy",
  "zerocopy",
+]
+
+[[package]]
+name = "harnessdeck"
+version = "0.1.0"
+dependencies = [
+ "base64 0.22.1",
+ "dirs 6.0.0",
+ "flate2",
+ "getrandom 0.3.4",
+ "image",
+ "node-runtime",
+ "portable-pty",
+ "proc-guard",
+ "qrcodegen",
+ "regex",
+ "reqwest",
+ "rustls",
+ "ruzstd",
+ "semver",
+ "serde",
+ "serde_json",
+ "sha2",
+ "sys-locale",
+ "tar",
+ "tauri",
+ "tauri-build",
+ "tauri-plugin-autostart",
+ "tauri-plugin-clipboard-manager",
+ "tauri-plugin-deep-link",
+ "tauri-plugin-dialog",
+ "tauri-plugin-global-shortcut",
+ "tauri-plugin-notification",
+ "tauri-plugin-opener",
+ "tauri-plugin-process",
+ "tauri-plugin-single-instance",
+ "tauri-plugin-updater",
+ "thiserror 2.0.20",
+ "tokio",
+ "url",
+ "windows-sys 0.61.2",
+ "windows-version",
+ "zip",
 ]
 
 [[package]]
@@ -2509,7 +2509,7 @@ dependencies = [
 
 [[package]]
 name = "node-runtime"
-version = "0.8.0"
+version = "0.1.0"
 dependencies = [
  "dirs 6.0.0",
  "proc-guard",
@@ -3126,7 +3126,7 @@ checksum = "925383efa346730478fb4838dbe9137d2a47675ad789c546d150a6e1dd4ab31c"
 
 [[package]]
 name = "proc-guard"
-version = "0.8.0"
+version = "0.1.0"
 dependencies = [
  "libc",
  "tokio",

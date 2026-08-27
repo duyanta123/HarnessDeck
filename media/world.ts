@@ -69,6 +69,7 @@ const environment: Environment = {
   expectedHarnessVersion: '0.1.0-rc.8',
   harnessProblem: null,
   harnessEntry: `${HARNESS_DIR}\\node_modules\\@deepseek-ai\\dsh\\lib\\bin.js`,
+  project: 'atlas',
   workspace: `${HOME}\\projects\\atlas`,
   workspaceAdmission: { state: 'safe', filesystem: 'NTFS', reason: null },
 }

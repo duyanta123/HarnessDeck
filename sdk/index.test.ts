@@ -21,7 +21,7 @@ function desktop() {
   }
 }
 
-describe('DSH Studio SDK', () => {
+describe('HarnessDeck SDK', () => {
   it('detects exactly Protocol 3 and rejects missing or malformed scopes', () => {
     const value = desktop().contract
     expect(getDshStudio({ dshStudio: value })).toBe(value)

@@ -39,6 +39,7 @@ import type {
 } from '@/lib/ipc'
 import { SEPARATOR, useMenu, type MenuEntry } from '@/state/menu'
 import { projects, spent, useSessions } from '@/state/sessions'
+import { useProjects } from '@/state/projects'
 
 /** Long enough that a search runs on words rather than on keystrokes. */
 const DEBOUNCE = 320
@@ -146,6 +147,12 @@ export function SessionsPane() {
   // the rail: nobody goes looking for "usage" without a session in mind, and a
   // rail that grows an entry per question stops being a rail.
   const [tab, setTab] = useState<'list' | 'usage'>('list')
+  const projectRoster = useProjects((state) => state.roster)
+  const refreshProjects = useProjects((state) => state.refresh)
+
+  useEffect(() => {
+    void refreshProjects()
+  }, [refreshProjects])
 
   useEffect(() => {
     void refresh()
@@ -163,7 +170,14 @@ export function SessionsPane() {
     [cards, project],
   )
 
-  const reach = useMemo(() => projects(cards ?? []), [cards])
+  const reach = useMemo(() => {
+    const seen = new Set<string>()
+    for (const path of projects(cards ?? [])) seen.add(path)
+    for (const project of projectRoster?.projects ?? []) {
+      if (project.path) seen.add(project.path)
+    }
+    return [...seen]
+  }, [cards, projectRoster])
 
   const show = (id: string, seq: number | null) => {
     setAnchor(seq)

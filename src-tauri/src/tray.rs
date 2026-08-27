@@ -52,7 +52,7 @@ pub fn build<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<()> {
     let open = MenuItem::with_id(
         app,
         OPEN,
-        pick("Open DSH Studio", "打开 DSH Studio"),
+        pick("Open HarnessDeck", "打开 HarnessDeck"),
         true,
         None::<&str>,
     )?;
@@ -302,9 +302,9 @@ fn tooltip_for(status: &Status, count: u32) -> String {
     };
 
     match count {
-        0 => format!("DSH Studio — {detail}"),
+        0 => format!("HarnessDeck — {detail}"),
         _ => format!(
-            "DSH Studio — {detail} · {count} {}",
+            "HarnessDeck — {detail} · {count} {}",
             pick("waiting", "项待处理")
         ),
     }
@@ -362,7 +362,7 @@ mod tests {
     fn a_running_tooltip_carries_the_origin() {
         let tooltip = tooltip_for(&ready(), 0);
         assert!(tooltip.contains("http://127.0.0.1:57652"), "{tooltip}");
-        assert!(tooltip.starts_with("DSH Studio"), "{tooltip}");
+        assert!(tooltip.starts_with("HarnessDeck"), "{tooltip}");
     }
 
     /// The badge stops drawing at nine, so a tooltip that also stopped there

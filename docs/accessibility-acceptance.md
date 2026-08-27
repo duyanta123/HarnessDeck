@@ -2,7 +2,7 @@
 
 [简体中文](accessibility-acceptance.zh-CN.md)
 
-DSH Studio treats accessibility as a release contract, not a one-time visual
+HarnessDeck treats accessibility as a release contract, not a one-time visual
 review. `pnpm verify:a11y` statically rejects unnamed buttons, keyboard-inert
 `role="button"` controls, and unnamed or non-modal dialogs. The same gate also
 requires visible focus, reduced-motion, and forced-colour rules and runs inside
@@ -23,7 +23,7 @@ manual matrix on each release candidate and attach the result to its build:
 
 For terminal content, verify keyboard copy/paste, the accessible tab names, and
 that closing one tab moves focus to a surviving control. xterm's stream content
-is third-party UI; native DSH Studio chrome around it remains covered by the
+is third-party UI; native HarnessDeck chrome around it remains covered by the
 contract above.
 
 No Apple device is currently available. macOS builds and headless tests are

@@ -28,7 +28,7 @@ import { contextMenu } from '@/state/menu'
 import { useUpdate } from '@/state/update'
 
 /** Where this build comes from. Our own repository, and the only link here. */
-const SOURCE = 'https://github.com/Moresyl/dsh-studio'
+const SOURCE = 'https://github.com/duyanta123/HarnessDeck'
 const BUGS = `${SOURCE}/issues/new?template=bug_report.yml`
 const FEATURES = `${SOURCE}/issues/new?template=feature_request.yml`
 const DISCUSSIONS = `${SOURCE}/discussions`
@@ -158,7 +158,7 @@ export function AboutPane() {
             <BrandMark size={52} className="shrink-0 rounded-[12px] shadow-lift" />
             <div className="flex min-w-0 flex-col gap-1.5">
               <h3 className="text-[16px] leading-none font-semibold tracking-[-0.01em] text-text">
-                DSH Studio
+                HarnessDeck
               </h3>
               <p className="selectable font-mono text-[11.5px] text-muted tabular-nums">
                 {about

@@ -2,22 +2,22 @@
 
 <img src="assets/brand/icon.svg" width="76" alt="">
 
-# DSH Studio
+# HarnessDeck
 
 **[DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) 的原生桌面外壳。**
 
 Rust + Tauri 2 编写。它托管本地 `dsh` 服务、回收服务派生出的每一个进程，
 并且做到这些不需要 fork 上游项目。
 
-[![Release](https://img.shields.io/github/v/release/Moresyl/dsh-studio?style=flat-square&color=3560e8&label=release)](https://github.com/Moresyl/dsh-studio/releases/latest)
-[![Downloads](https://img.shields.io/github/downloads/Moresyl/dsh-studio/total?style=flat-square&color=3560e8&label=downloads)](https://github.com/Moresyl/dsh-studio/releases)
-[![CI](https://img.shields.io/github/actions/workflow/status/Moresyl/dsh-studio/ci.yml?branch=main&style=flat-square&label=CI)](https://github.com/Moresyl/dsh-studio/actions/workflows/ci.yml)
-[![Stars](https://img.shields.io/github/stars/Moresyl/dsh-studio?style=flat-square&color=3560e8)](https://github.com/Moresyl/dsh-studio/stargazers)
+[![Release](https://img.shields.io/github/v/release/duyanta123/HarnessDeck?style=flat-square&color=3560e8&label=release)](https://github.com/duyanta123/HarnessDeck/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/duyanta123/HarnessDeck/total?style=flat-square&color=3560e8&label=downloads)](https://github.com/duyanta123/HarnessDeck/releases)
+[![CI](https://img.shields.io/github/actions/workflow/status/duyanta123/HarnessDeck/ci.yml?branch=main&style=flat-square&label=CI)](https://github.com/duyanta123/HarnessDeck/actions/workflows/ci.yml)
+[![Stars](https://img.shields.io/github/stars/duyanta123/HarnessDeck?style=flat-square&color=3560e8)](https://github.com/duyanta123/HarnessDeck/stargazers)
 [![License](https://img.shields.io/badge/license-MIT-3560e8?style=flat-square)](LICENSE)
 
-[![Windows 下载](https://img.shields.io/badge/Windows-.exe%20%C2%B7%20.msi-3560e8?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/Moresyl/dsh-studio/releases/latest)
-[![macOS 下载](https://img.shields.io/badge/macOS-.dmg-1c1c1e?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/Moresyl/dsh-studio/releases/latest)
-[![Linux 下载](https://img.shields.io/badge/Linux-.AppImage%20%C2%B7%20.deb%20%C2%B7%20.rpm-0e9e74?style=for-the-badge&logo=linux&logoColor=white)](https://github.com/Moresyl/dsh-studio/releases/latest)
+[![Windows 下载](https://img.shields.io/badge/Windows-.exe%20%C2%B7%20.msi-3560e8?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/duyanta123/HarnessDeck/releases/latest)
+[![macOS 下载](https://img.shields.io/badge/macOS-.dmg-1c1c1e?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/duyanta123/HarnessDeck/releases/latest)
+[![Linux 下载](https://img.shields.io/badge/Linux-.AppImage%20%C2%B7%20.deb%20%C2%B7%20.rpm-0e9e74?style=for-the-badge&logo=linux&logoColor=white)](https://github.com/duyanta123/HarnessDeck/releases/latest)
 
 每个安装包不到 4 MB · [全部产物与校验和](#安装) · [English](README.md)
 
@@ -42,7 +42,7 @@ Rust + Tauri 2 编写。它托管本地 `dsh` 服务、回收服务派生出的�
 `dsh` 是一个本地 Web 服务。用终端跑它当然可以，但你得自己管这个进程：
 找一个没被占用的端口、留意它什么时候挂了、以及它挂掉之后清理它留下的那一堆工具子进程。
 
-DSH Studio 把这件事变成一个窗口。设计目标是让外壳**足够无聊**——
+HarnessDeck 把这件事变成一个窗口。设计目标是让外壳**足够无聊**——
 把服务拉起来、让它一直活着，然后别挡着 harness 自己的界面。
 
 ## 它做了什么
@@ -125,7 +125,7 @@ harness 本身从它自己的源加载，所以你看到的是真正的上游界
 flowchart LR
   phone["同一网络下的手机"]
 
-  subgraph app["DSH Studio —— 单进程"]
+  subgraph app["HarnessDeck —— 单进程"]
     ui["WebView<br/>React 外壳界面"]
     sup["Rust supervisor<br/>退避 · 就绪 · 健康"]
     gw["远程网关<br/>单个局域网地址 · 每设备密钥"]
@@ -191,7 +191,7 @@ macOS 通用版为轻量版。完整离线版内含原生 Node runtime，因此�
 并且是从一个真实 release 生成的——里面的版本号和 SHA-256 从来不是手打的：
 
 ```powershell
-scoop bucket add dsh https://github.com/Moresyl/dsh-studio
+scoop bucket add dsh https://github.com/duyanta123/HarnessDeck
 scoop install dsh-studio
 ```
 
@@ -210,7 +210,7 @@ registry——[`packaging/README.md`](packaging/README.md) 里逐条写明了每
 机器上没有 Node.js 也没关系——应用会替你装一个。
 每个版本改了什么，见[更新日志](CHANGELOG.zh-CN.md)。
 
-[Releases]: https://github.com/Moresyl/dsh-studio/releases
+[Releases]: https://github.com/duyanta123/HarnessDeck/releases
 
 ## 当前状态
 
@@ -267,7 +267,7 @@ registry——[`packaging/README.md`](packaging/README.md) 里逐条写明了每
 
 ## 环境要求
 
-- **不需要你先装任何东西。** DSH Studio 需要 Node.js 22.19 或更新版本来跑 harness，
+- **不需要你先装任何东西。** HarnessDeck 需要 Node.js 22.19 或更新版本来跑 harness，
   你有的话它就去找出来——包括版本管理器装了、但从没加进 `PATH` 的那些。
   你没有的话，它会下载一个、校验过之后放进自己的数据目录。
   harness 本身两种情况下都由它替你安装。
@@ -379,9 +379,9 @@ supervisor 再从服务自己打印的就绪行里把真实端口读回来。
 
 | 去哪儿                                                                                      | 做什么                                                                      |
 | ------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| [报一个 bug](https://github.com/Moresyl/dsh-studio/issues/new?template=bug_report.yml)      | 表单一上来就问平台、Node 版本和日志——定位问题最需要的就是这三样。           |
-| [提一个需求](https://github.com/Moresyl/dsh-studio/issues/new?template=feature_request.yml) | 包括「这件事 harness 在终端里能做，窗口里做不了」。                         |
-| [私下报告问题](https://github.com/Moresyl/dsh-studio/security/advisories/new)               | 关于网关、配对密钥或 supervisor 的任何事。另见 [SECURITY.md](SECURITY.md)。 |
+| [报一个 bug](https://github.com/duyanta123/HarnessDeck/issues/new?template=bug_report.yml)      | 表单一上来就问平台、Node 版本和日志——定位问题最需要的就是这三样。           |
+| [提一个需求](https://github.com/duyanta123/HarnessDeck/issues/new?template=feature_request.yml) | 包括「这件事 harness 在终端里能做，窗口里做不了」。                         |
+| [私下报告问题](https://github.com/duyanta123/HarnessDeck/security/advisories/new)               | 关于网关、配对密钥或 supervisor 的任何事。另见 [SECURITY.md](SECURITY.md)。 |
 | [harness 本身](https://github.com/deepseek-ai/deepseek-harness/issues)                      | agent、它的界面、它的模型。这个仓库只是它外面那个窗口。                     |
 
 用中文提 issue 完全没问题，也会用中文回复——
@@ -399,4 +399,6 @@ supervisor 再从服务自己打印的就绪行里把真实端口读回来。
 
 [MIT](LICENSE)。
 
-DSH Studio 是独立项目，与 DeepSeek 无隶属关系，也未获其背书。
+HarnessDeck 是独立项目，与 DeepSeek 无隶属关系，也未获其背书。
+
+HarnessDeck 是 [Moresyl/dsh-studio](https://github.com/Moresyl/dsh-studio) 的 fork，并延续其 MIT 许可。

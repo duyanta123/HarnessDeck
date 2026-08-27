@@ -20,7 +20,7 @@ mod native {
         let pick = crate::locale::pick;
         let about = PredefinedMenuItem::about(
             app,
-            Some(pick("About DSH Studio", "关于 DSH Studio")),
+            Some(pick("About HarnessDeck", "关于 HarnessDeck")),
             None,
         )?;
         let check = MenuItem::with_id(
@@ -33,7 +33,7 @@ mod native {
         let restart = MenuItem::with_id(
             app,
             RESTART,
-            pick("Restart DSH Studio", "重新启动 DSH Studio"),
+            pick("Restart HarnessDeck", "重新启动 HarnessDeck"),
             true,
             None::<&str>,
         )?;
@@ -45,7 +45,7 @@ mod native {
         let quit = PredefinedMenuItem::quit(app, None)?;
         let application = Submenu::with_items(
             app,
-            "DSH Studio",
+            "HarnessDeck",
             true,
             &[
                 &about,

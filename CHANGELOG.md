@@ -9,6 +9,26 @@ pre-1.0 caveat that anything may still move.
 
 ## [Unreleased]
 
+## [0.1.0] — 2026-08-28
+
+### Changed
+
+- Rebranded the application as **HarnessDeck**: window title, menus, tray,
+  notifications, recovery surface, settings copy, and app metadata now use the
+  new name.
+- Deep-link protocol is now `harnessdeck://`; application identifier is now
+  `app.harnessdeck`; version has been reset to `0.1.0`.
+- Application data moves from `%LOCALAPPDATA%\dsh-studio` to
+  `%LOCALAPPDATA%\harnessdeck` with existing data carried over by rename.
+- The updater is intentionally disabled for this phase: code stays wired but
+  `createUpdaterArtifacts` is off and the endpoint points at the new repository's
+  future `latest.json` placeholder.
+
+### Added
+
+- Multi-project workspace support: the window can host a roster of projects on
+  disk, each bound to a DSH profile and persisted in `projects.json`.
+
 ## [0.8.0] — 2026-08-25
 
 ### Added

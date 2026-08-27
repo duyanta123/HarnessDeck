@@ -1,9 +1,9 @@
 {
-  "name": "dsh-studio",
+  "name": "harnessdeck",
   "private": true,
-  "version": "0.8.0",
+  "version": "0.1.0",
   "type": "module",
-  "description": "Native desktop studio for DeepSeek Harness — Linux/macOS/Windows, built with Rust + Tauri",
+  "description": "HarnessDeck is a native desktop shell for DeepSeek Harness, built with Rust + Tauri",
   "keywords": [
     "deepseek",
     "deepseek-harness",
@@ -18,15 +18,15 @@
     "plugin-marketplace",
     "developer-tools"
   ],
-  "homepage": "https://github.com/Moresyl/dsh-studio#readme",
+  "homepage": "https://github.com/duyanta123/HarnessDeck#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Moresyl/dsh-studio.git"
+    "url": "git+https://github.com/duyanta123/HarnessDeck.git"
   },
   "bugs": {
-    "url": "https://github.com/Moresyl/dsh-studio/issues"
+    "url": "https://github.com/duyanta123/HarnessDeck/issues"
   },
-  "author": "Moresyl",
+  "author": "duyan",
   "license": "MIT",
   "scripts": {
     "dev": "vite",
@@ -81,5 +81,10 @@
     "vite": "^6.4.1",
     "vitest": "^4.1.5"
   },
-  "packageManager": "pnpm@10.30.2"
+  "packageManager": "pnpm@10.30.2",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  }
 }

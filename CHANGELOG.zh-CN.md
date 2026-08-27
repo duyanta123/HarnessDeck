@@ -9,6 +9,23 @@
 
 ## [未发布]
 
+## [0.1.0] —— 2026-08-28
+
+### 变更
+
+- 应用正式更名 **HarnessDeck**：窗口标题、菜单、托盘、通知、恢复界面、设置文案和
+  应用元信息均使用新名称。
+- 深度链接协议改为 `harnessdeck://`，应用标识改为 `app.harnessdeck`，版本号重置为 `0.1.0`。
+- 应用数据目录由 `%LOCALAPPDATA%\dsh-studio` 迁移到 `%LOCALAPPDATA%\harnessdeck`，
+  通过目录改名接管既有数据。
+- 本阶段更新器禁用保留：`createUpdaterArtifacts` 关闭，端点指向新仓库未来的
+  `latest.json` 占位地址，代码保留待转开源后启用。
+
+### 新增
+
+- 多项目工作区支持：应用可管理多个本地项目，每个项目绑定一个 DSH profile，并持久化
+  到 `projects.json`。
+
 ## [0.8.0] —— 2026-08-25
 
 ### 新增

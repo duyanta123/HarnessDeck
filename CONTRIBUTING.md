@@ -1,4 +1,4 @@
-# Contributing to DSH Studio
+# Contributing to HarnessDeck
 
 Thanks for looking. This is a small project with a small number of firm
 opinions, and this file is where they are written down so a pull request does

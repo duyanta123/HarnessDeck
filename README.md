@@ -2,22 +2,22 @@
 
 <img src="assets/brand/icon.svg" width="76" alt="">
 
-# DSH Studio
+# HarnessDeck
 
 **A native desktop shell for [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness).**
 
 Rust + Tauri 2. It supervises the local `dsh` service, reclaims every process it
 spawns, and never forks the upstream project to do it.
 
-[![Release](https://img.shields.io/github/v/release/Moresyl/dsh-studio?style=flat-square&color=3560e8&label=release)](https://github.com/Moresyl/dsh-studio/releases/latest)
-[![Downloads](https://img.shields.io/github/downloads/Moresyl/dsh-studio/total?style=flat-square&color=3560e8&label=downloads)](https://github.com/Moresyl/dsh-studio/releases)
-[![CI](https://img.shields.io/github/actions/workflow/status/Moresyl/dsh-studio/ci.yml?branch=main&style=flat-square&label=CI)](https://github.com/Moresyl/dsh-studio/actions/workflows/ci.yml)
-[![Stars](https://img.shields.io/github/stars/Moresyl/dsh-studio?style=flat-square&color=3560e8)](https://github.com/Moresyl/dsh-studio/stargazers)
+[![Release](https://img.shields.io/github/v/release/duyanta123/HarnessDeck?style=flat-square&color=3560e8&label=release)](https://github.com/duyanta123/HarnessDeck/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/duyanta123/HarnessDeck/total?style=flat-square&color=3560e8&label=downloads)](https://github.com/duyanta123/HarnessDeck/releases)
+[![CI](https://img.shields.io/github/actions/workflow/status/duyanta123/HarnessDeck/ci.yml?branch=main&style=flat-square&label=CI)](https://github.com/duyanta123/HarnessDeck/actions/workflows/ci.yml)
+[![Stars](https://img.shields.io/github/stars/duyanta123/HarnessDeck?style=flat-square&color=3560e8)](https://github.com/duyanta123/HarnessDeck/stargazers)
 [![License](https://img.shields.io/badge/license-MIT-3560e8?style=flat-square)](LICENSE)
 
-[![Download for Windows](https://img.shields.io/badge/Windows-.exe%20%C2%B7%20.msi-3560e8?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/Moresyl/dsh-studio/releases/latest)
-[![Download for macOS](https://img.shields.io/badge/macOS-.dmg-1c1c1e?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/Moresyl/dsh-studio/releases/latest)
-[![Download for Linux](https://img.shields.io/badge/Linux-.AppImage%20%C2%B7%20.deb%20%C2%B7%20.rpm-0e9e74?style=for-the-badge&logo=linux&logoColor=white)](https://github.com/Moresyl/dsh-studio/releases/latest)
+[![Download for Windows](https://img.shields.io/badge/Windows-.exe%20%C2%B7%20.msi-3560e8?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/duyanta123/HarnessDeck/releases/latest)
+[![Download for macOS](https://img.shields.io/badge/macOS-.dmg-1c1c1e?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/duyanta123/HarnessDeck/releases/latest)
+[![Download for Linux](https://img.shields.io/badge/Linux-.AppImage%20%C2%B7%20.deb%20%C2%B7%20.rpm-0e9e74?style=for-the-badge&logo=linux&logoColor=white)](https://github.com/duyanta123/HarnessDeck/releases/latest)
 
 Under 4 MB per installer · [all artifacts and checksums](#install) · [简体中文](README.zh-CN.md)
 
@@ -44,7 +44,7 @@ without uninstalling it.
 managing a process by hand: finding a free port, noticing when it dies, and
 cleaning up the tool subprocesses it leaves behind when it does.
 
-DSH Studio makes that a window. The design goal is that the shell should be
+HarnessDeck makes that a window. The design goal is that the shell should be
 **boring** — it starts the service, keeps it alive, and stays out of the way of
 the harness UI.
 
@@ -140,7 +140,7 @@ what you see is the real upstream UI rather than a re-implementation of it.
 flowchart LR
   phone["phone on the same network"]
 
-  subgraph app["DSH Studio — one process"]
+  subgraph app["HarnessDeck — one process"]
     ui["WebView<br/>React shell UI"]
     sup["Rust supervisor<br/>backoff · readiness · health"]
     gw["remote gateway<br/>one LAN address · per-device keys"]
@@ -212,7 +212,7 @@ and are generated from a real release, so the version and the SHA-256 in them ar
 never hand-typed:
 
 ```powershell
-scoop bucket add dsh https://github.com/Moresyl/dsh-studio
+scoop bucket add dsh https://github.com/duyanta123/HarnessDeck
 scoop install dsh-studio
 ```
 
@@ -235,7 +235,7 @@ bytes did not.
 No Node.js on the machine is fine — the app installs one for you. What changed
 between versions is in the [changelog](CHANGELOG.md).
 
-[Releases]: https://github.com/Moresyl/dsh-studio/releases
+[Releases]: https://github.com/duyanta123/HarnessDeck/releases
 
 ## Status
 
@@ -296,7 +296,7 @@ one of those credentials can be taken back on its own, mid-connection.
 
 ## Requirements
 
-- **Nothing you have to install first.** DSH Studio needs Node.js 22.19 or newer to
+- **Nothing you have to install first.** HarnessDeck needs Node.js 22.19 or newer to
   run the harness, and it finds one if you have it — including the ones a version
   manager installed but never put on `PATH`. If you do not, it downloads and
   verifies one into its own data directory. The harness itself is installed for
@@ -418,9 +418,9 @@ API keys is upstream's business, not this project's.
 
 | Where                                                                                              | For                                                                                              |
 | -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| [Report a bug](https://github.com/Moresyl/dsh-studio/issues/new?template=bug_report.yml)           | The form asks for the platform, the Node and the log up front — the three things triage needs.   |
-| [Ask for a feature](https://github.com/Moresyl/dsh-studio/issues/new?template=feature_request.yml) | Including "the harness can do this from a terminal and the window cannot".                       |
-| [Report something privately](https://github.com/Moresyl/dsh-studio/security/advisories/new)        | Anything about the gateway, the pairing keys, or the supervisor. See [SECURITY.md](SECURITY.md). |
+| [Report a bug](https://github.com/duyanta123/HarnessDeck/issues/new?template=bug_report.yml)           | The form asks for the platform, the Node and the log up front — the three things triage needs.   |
+| [Ask for a feature](https://github.com/duyanta123/HarnessDeck/issues/new?template=feature_request.yml) | Including "the harness can do this from a terminal and the window cannot".                       |
+| [Report something privately](https://github.com/duyanta123/HarnessDeck/security/advisories/new)        | Anything about the gateway, the pairing keys, or the supervisor. See [SECURITY.md](SECURITY.md). |
 | [The harness itself](https://github.com/deepseek-ai/deepseek-harness/issues)                       | The agent, its UI, its models. This repository is only the window around it.                     |
 
 Participation is governed by the [Code of Conduct](CODE_OF_CONDUCT.md)
@@ -442,5 +442,7 @@ way it is, not what the line below does.
 
 [MIT](LICENSE).
 
-DSH Studio is an independent project. It is not affiliated with or endorsed by
+HarnessDeck is an independent project. It is not affiliated with or endorsed by
 DeepSeek.
+
+HarnessDeck is a fork of [Moresyl/dsh-studio](https://github.com/Moresyl/dsh-studio) and keeps its MIT license.

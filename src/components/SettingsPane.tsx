@@ -1,9 +1,13 @@
 import { useEffect, useState } from 'react'
+import { open as openDialog } from '@tauri-apps/plugin-dialog'
 import type { ComponentType, KeyboardEvent, ReactNode } from 'react'
 import {
   BellRing,
   CircleCheck,
   CircleX,
+  FolderPlus,
+  Pencil,
+  Trash2,
   Keyboard,
   Network,
   Power,
@@ -22,6 +26,9 @@ import { t } from '@/lib/i18n'
 import { readCombination, spellCombination } from '@/lib/keys'
 import { isMac } from '@/lib/platform'
 import { useStartup } from '@/state/startup'
+import { ask } from '@/state/dialog'
+import { useProfiles } from '@/state/profiles'
+import { switchProject, useProjects } from '@/state/projects'
 import { usePresentation } from '@/state/presentation'
 
 /**
@@ -73,6 +80,7 @@ export function SettingsPane() {
 
       <div className="min-h-0 flex-1 overflow-y-auto bg-canvas px-6 py-6">
         <div className="mx-auto flex max-w-[620px] flex-col gap-4">
+          <ProjectsSection />
           <div className="divide-y divide-line overflow-hidden rounded-panel border border-line bg-canvas-deep/50">
             <Row icon={Power} label={t('settings.autostart')} hint={t('settings.autostartHint')}>
               <Switch
@@ -252,6 +260,171 @@ export function SettingsPane() {
       </div>
     </section>
   )
+}
+/**
+ * Project registry settings.
+ *
+ * A project is a local folder plus the DSH profile whose credentials and
+ * plugins belong to it. The project switcher lives in the title bar; this is
+ * where projects are made, renamed, rebound and removed.
+ */
+function ProjectsSection() {
+  const roster = useProjects((state) => state.roster)
+  const working = useProjects((state) => state.working)
+  const error = useProjects((state) => state.error)
+  const refresh = useProjects((state) => state.refresh)
+  const add = useProjects((state) => state.add)
+  const remove = useProjects((state) => state.remove)
+  const rename = useProjects((state) => state.rename)
+  const bindProfile = useProjects((state) => state.bindProfile)
+  const profiles = useProfiles((state) => state.roster)
+  const refreshProfiles = useProfiles((state) => state.refresh)
+  const [editing, setEditing] = useState<string | null>(null)
+  const [draft, setDraft] = useState('')
+
+  useEffect(() => {
+    void refresh()
+    void refreshProfiles()
+  }, [refresh, refreshProfiles])
+
+  const choose = async () => {
+    const chosen = await openDialog({
+      title: t('project.new'),
+      directory: true,
+      multiple: false,
+    })
+    if (typeof chosen !== 'string') return
+    await add(chosen)
+  }
+
+  const beginRename = (id: string, current: string) => {
+    setEditing(id)
+    setDraft(current)
+  }
+
+  const commitRename = async (id: string) => {
+    const clean = draft.trim()
+    if (clean) await rename(id, clean)
+    setEditing(null)
+  }
+
+  const confirmRemove = async (id: string, name: string) => {
+    const taken = await ask({
+      title: t('project.remove'),
+      body: `${name}`,
+      subject: name,
+      confirm: t('project.remove'),
+      tone: 'danger',
+    })
+    if (!taken) return
+    await remove(id)
+  }
+
+  return (
+    <div className="overflow-hidden rounded-panel border border-line bg-canvas-deep/50">
+      <div className="flex items-center justify-between border-b border-line px-4 py-3">
+        <div>
+          <h3 className="text-[12.5px] font-medium text-text">{t('project.manage')}</h3>
+          <p className="mt-0.5 text-[11.5px] text-faint">
+            {t('check.project')} · {roster?.projects.length ?? 0}
+          </p>
+        </div>
+        <Button variant="secondary" onClick={() => void choose()} disabled={working !== null}>
+          <FolderPlus size={13} strokeWidth={2.1} />
+          {t('project.new')}
+        </Button>
+      </div>
+
+      {error && (
+        <p className="selectable border-b border-danger/30 bg-danger/10 px-4 py-2 text-[11.5px] leading-relaxed text-danger">
+          {error}
+        </p>
+      )}
+
+      {(roster?.projects ?? []).length === 0 ? (
+        <p className="px-4 py-6 text-center text-[12px] text-faint">{t('project.new')}</p>
+      ) : (
+        <ul className="divide-y divide-line">
+          {(roster?.projects ?? []).map((project) => (
+            <li key={project.id} className="px-4 py-3">
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  data-hint={project.path}
+                  onClick={() => void switchProject(project.id)}
+                  className="min-w-0 flex-1 truncate text-left text-[12.5px] font-medium text-text transition-colors duration-100 hover:text-brand"
+                >
+                  <span className="truncate">{project.name}</span>
+                  <span className="ml-2 text-[11px] text-faint">{leaf(project.path)}</span>
+                </button>
+
+                <Button
+                  variant="ghost"
+                  aria-label={t('project.rename')}
+                  data-hint={t('project.rename')}
+                  onClick={() => beginRename(project.id, project.name)}
+                >
+                  <Pencil size={13} strokeWidth={2.1} />
+                </Button>
+
+                <Button
+                  variant="danger"
+                  aria-label={t('project.remove')}
+                  data-hint={t('project.remove')}
+                  disabled={working !== null || (roster?.projects.length ?? 0) <= 1}
+                  onClick={() => void confirmRemove(project.id, project.name)}
+                >
+                  <Trash2 size={13} strokeWidth={2.1} />
+                </Button>
+              </div>
+
+              {editing === project.id && (
+                <div className="mt-2 flex items-center gap-2">
+                  <input
+                    autoFocus
+                    value={draft}
+                    aria-label={t('project.rename')}
+                    onChange={(event) => setDraft(event.target.value)}
+                    onBlur={() => void commitRename(project.id)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter') event.currentTarget.blur()
+                      if (event.key === 'Escape') {
+                        setEditing(null)
+                      }
+                    }}
+                    className="h-[30px] min-w-0 flex-1 rounded-control border border-line-strong bg-surface-2 px-2.5 text-[12px] text-text outline-none focus:border-brand"
+                  />
+                </div>
+              )}
+
+              <label className="mt-2 flex items-center gap-2 text-[11.5px] text-faint">
+                <span className="shrink-0">{t('project.profile')}</span>
+                <select
+                  value={project.profile}
+                  aria-label={t('project.profile')}
+                  disabled={working !== null}
+                  onChange={(event) => void bindProfile(project.id, event.target.value)}
+                  className="h-[28px] min-w-0 flex-1 rounded-control border border-line-strong bg-surface-2 px-2 text-[11.5px] text-text outline-none focus:border-brand disabled:opacity-40"
+                >
+                  {(profiles?.profiles ?? []).map((profile) => (
+                    <option key={profile.name} value={profile.name}>
+                      {profile.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
+}
+
+/** Keep the end of a path, which is the part that identifies it. */
+function leaf(path: string): string {
+  const parts = path.split(/[\\/]/).filter(Boolean)
+  return parts.length > 0 ? (parts[parts.length - 1] ?? path) : path
 }
 
 /**

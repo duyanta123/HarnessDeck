@@ -95,6 +95,8 @@ pub enum Error {
 
     #[error("workspace cannot be opened: {0}")]
     Workspace(String),
+#[error("{0}")]
+    Project(String),
 }
 
 pub type Result<T> = std::result::Result<T, Error>;

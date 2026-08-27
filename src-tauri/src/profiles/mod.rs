@@ -951,7 +951,7 @@ fn is_name(name: &str) -> bool {
 /// into `dsh-profile-<name>`, which is an npm package name, so what is allowed
 /// here is what npm allows in one. Existing profiles are held to the looser rule
 /// above, because a profile somebody made from a terminal is still theirs.
-fn is_new_name(name: &str) -> bool {
+pub(crate) fn is_new_name(name: &str) -> bool {
     is_name(name)
         && !name.starts_with(['-', '_'])
         && name.chars().all(|character| {

@@ -1,7 +1,7 @@
 {
   "name": "@moresyl/dsh-studio-sdk",
-  "version": "0.8.0",
-  "description": "Typed feature detection and Protocol 3 contracts for DSH Studio plugins",
+  "version": "0.1.0",
+  "description": "Typed feature detection and Protocol 3 contracts for HarnessDeck plugins",
   "type": "module",
   "main": "./index.js",
   "types": "./index.d.ts",
@@ -26,12 +26,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Moresyl/dsh-studio.git",
+    "url": "git+https://github.com/duyanta123/HarnessDeck.git",
     "directory": "sdk"
   },
-  "homepage": "https://github.com/Moresyl/dsh-studio/tree/main/sdk#readme",
+  "homepage": "https://github.com/duyanta123/HarnessDeck/tree/main/sdk#readme",
   "bugs": {
-    "url": "https://github.com/Moresyl/dsh-studio/issues"
+    "url": "https://github.com/duyanta123/HarnessDeck/issues"
   },
   "keywords": [
     "deepseek",
@@ -40,6 +40,6 @@
     "plugin",
     "desktop"
   ],
-  "author": "Moresyl",
+  "author": "duyan",
   "license": "MIT"
 }

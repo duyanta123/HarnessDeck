@@ -2,7 +2,7 @@
 
 ## Supported versions
 
-DSH Studio is pre-1.0. Only the latest release gets fixes; there are no
+HarnessDeck is pre-1.0. Only the latest release gets fixes; there are no
 maintained older branches.
 
 | Version        | Supported |
@@ -27,11 +27,11 @@ You should get a first response within a week. If a fix is warranted, the
 advisory will be published alongside the release that carries it, and you will
 be credited unless you would rather not be.
 
-[advisory]: https://github.com/Moresyl/dsh-studio/security/advisories/new
+[advisory]: https://github.com/duyanta123/HarnessDeck/security/advisories/new
 
 ## What this project is responsible for
 
-DSH Studio launches and supervises a local service. It is a shell around
+HarnessDeck launches and supervises a local service. It is a shell around
 software it does not own, so the boundary is worth stating plainly.
 
 **In scope — the shell's own behaviour:**
@@ -114,7 +114,7 @@ that an installer came from this project and was not tampered with in transit.
 Until signing is in place, download only from the [Releases page][releases] on
 this repository, and treat installers from anywhere else as untrusted.
 
-[releases]: https://github.com/Moresyl/dsh-studio/releases
+[releases]: https://github.com/duyanta123/HarnessDeck/releases
 
 ---
 

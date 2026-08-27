@@ -210,7 +210,7 @@ impl Terminals {
             Output {
                 id: id.clone(),
                 data: format!(
-                    "\r\n\x1b[1;36mDSH Studio {}\x1b[0m\r\nProfile: {}\r\nWorkspace: {}\r\nTools: {}\r\n\r\n",
+                    "\r\n\x1b[1;36mHarnessDeck {}\x1b[0m\r\nProfile: {}\r\nWorkspace: {}\r\nTools: {}\r\n\r\n",
                     app.package_info().version,
                     profile,
                     describe.cwd.display(),

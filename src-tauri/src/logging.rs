@@ -206,7 +206,9 @@ pub fn crash_files() -> Vec<PathBuf> {
     #[cfg(windows)]
     if let Some(local) = dirs::data_local_dir() {
         collect_crashes(&local.join("CrashDumps"), &mut paths, |name| {
-            name.to_ascii_lowercase().starts_with("dsh-studio") && name.ends_with(".dmp")
+            let lower = name.to_ascii_lowercase();
+            (lower.starts_with("dsh-studio") || lower.starts_with("harnessdeck"))
+                && lower.ends_with(".dmp")
         });
     }
 
@@ -217,7 +219,7 @@ pub fn crash_files() -> Vec<PathBuf> {
             &mut paths,
             |name| {
                 let lower = name.to_ascii_lowercase();
-                lower.starts_with("dsh studio")
+                (lower.starts_with("dsh studio") || lower.starts_with("harnessdeck"))
                     && (lower.ends_with(".crash") || lower.ends_with(".ips"))
             },
         );
@@ -272,7 +274,7 @@ fn write_frontend_crash_into(root: &Path, message: &str, stack: &str, url: &str)
         std::process::id()
     ));
     let body = format!(
-        "DSH Studio WebView crash evidence\ntime={}\nurl={}\nmessage={}\nstack=\n{}\n",
+        "HarnessDeck WebView crash evidence\ntime={}\nurl={}\nmessage={}\nstack=\n{}\n",
         crate::sessions::export::stamp(now_millis()),
         url.chars().take(2_048).collect::<String>(),
         message.chars().take(FIELD_CEILING).collect::<String>(),
@@ -358,7 +360,7 @@ fn write_crash(info: &std::panic::PanicHookInfo<'_>) {
         .map(|location| format!("{}:{}", location.file(), location.line()))
         .unwrap_or_else(|| "unknown".to_string());
     let body = format!(
-        "DSH Studio local crash evidence\ntime={}\nlocation={}\nmessage={}\nbacktrace=\n{}\n",
+        "HarnessDeck local crash evidence\ntime={}\nlocation={}\nmessage={}\nbacktrace=\n{}\n",
         crate::sessions::export::stamp(now_millis()),
         location,
         redact_secrets(payload),

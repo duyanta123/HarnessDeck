@@ -171,8 +171,8 @@ fn show<R: Runtime>(app: &AppHandle<R>, failure: &RendererFailure) {
     let built =
         WebviewWindowBuilder::new(app, LABEL, WebviewUrl::App(PathBuf::from("recovery.html")))
             .title(crate::locale::pick(
-                "DSH Studio startup recovery",
-                "DSH Studio 启动恢复",
+                "HarnessDeck startup recovery",
+                "HarnessDeck 启动恢复",
             ))
             .inner_size(WIDTH, HEIGHT)
             .min_inner_size(520.0, 420.0)
@@ -180,7 +180,7 @@ fn show<R: Runtime>(app: &AppHandle<R>, failure: &RendererFailure) {
             .build();
     if let Err(cause) = built {
         eprintln!(
-            "DSH Studio could not open renderer recovery for {}: {cause}",
+            "HarnessDeck could not open renderer recovery for {}: {cause}",
             failure.window
         );
     }

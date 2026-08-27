@@ -22,6 +22,7 @@ import { useOnboarding } from '@/state/onboarding'
 import { usePalette } from '@/state/palette'
 import { usePresentation } from '@/state/presentation'
 import { subscribeToProfiles } from '@/state/profiles'
+import { subscribeToProjects } from '@/state/projects'
 import { subscribeToRemote, useRemote } from '@/state/remote'
 import { useUpdate, watchForUpdates } from '@/state/update'
 import { switchWorkspace } from '@/state/workspace'
@@ -175,6 +176,15 @@ export default function App() {
       void pending.then((unlisten) => unlisten())
     }
   }, [])
+  // Windows are views onto one project registry too. The title-bar project
+  // switcher is never closed, so a project added or removed in another window
+  // has to reach it the same way profiles do.
+  useEffect(() => {
+    const pending = subscribeToProjects()
+    return () => {
+      void pending.then((unlisten) => unlisten())
+    }
+  }, [])
 
   // Also here rather than in the status bar that shows the result: the check
   // should keep its schedule while the user is reading a pane, and a component
@@ -275,6 +285,7 @@ export default function App() {
         // Not while the guide is up: which profile to work in is a question for
         // somebody who already has a harness to point at one.
         onManageProfiles={stage === 'guiding' ? undefined : manage}
+        onManageProjects={stage === 'guiding' ? undefined : () => show(SETTINGS.id)}
       />
 
       {stage === 'guiding' ? (

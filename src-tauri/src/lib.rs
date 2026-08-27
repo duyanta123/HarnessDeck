@@ -1,4 +1,4 @@
-//! dsh-studio — a native desktop shell for the DeepSeek Harness.
+//! HarnessDeck — a native desktop shell for the DeepSeek Harness.
 
 mod about;
 mod application_menu;
@@ -17,6 +17,7 @@ mod paths;
 mod plugins;
 mod presets;
 mod profiles;
+mod projects;
 mod recovery;
 mod remote;
 mod sessions;
@@ -157,6 +158,12 @@ pub fn run() {
             profiles::commands::profile_export,
             profiles::commands::profile_declaration,
             profiles::commands::profile_import,
+            projects::commands::projects_list,
+            projects::commands::projects_add,
+            projects::commands::projects_remove,
+            projects::commands::projects_rename,
+            projects::commands::projects_select,
+            projects::commands::projects_bind_profile,
             terminal::commands::terminal_open,
             terminal::commands::terminal_write,
             terminal::commands::terminal_resize,
@@ -194,7 +201,7 @@ pub fn run() {
             workspace::workspace_inspect,
         ])
         .run(tauri::generate_context!())
-        .expect("dsh-studio failed to start");
+        .expect("HarnessDeck failed to start");
 }
 
 /// Export bounded, redacted evidence without starting Tauri, Harness or a window.

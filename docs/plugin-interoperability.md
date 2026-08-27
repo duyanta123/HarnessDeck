@@ -1,8 +1,8 @@
-# DSH Studio plugin interoperability contract
+# HarnessDeck plugin interoperability contract
 
 [简体中文](plugin-interoperability.zh-CN.md)
 
-Status: **supported for DSH Studio 0.7.x**. The wire protocol is version 3, the
+Status: **supported for HarnessDeck 0.7.x**. The wire protocol is version 3, the
 catalog schema is 1.0.0, and the SDK package follows the application version.
 Normative words such as MUST, MUST NOT and SHOULD are used intentionally.
 

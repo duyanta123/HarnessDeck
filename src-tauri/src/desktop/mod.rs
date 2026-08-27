@@ -39,7 +39,7 @@ const PROTOCOL: u32 = 3;
 
 /// The scheme this app answers to. Registered by the installer, and at runtime
 /// in a development build where no installer has run.
-const SCHEME: &str = "dsh";
+const SCHEME: &str = "harnessdeck";
 
 /// Channel the shell listens on for links that arrive while it is running.
 const LINK_CHANNEL: &str = "desktop://link";
@@ -67,7 +67,7 @@ pub struct Desk {
     pending: Mutex<Option<Link>>,
 }
 
-/// A `dsh://` link, already taken apart.
+/// A `harnessdeck://` link, already taken apart.
 ///
 /// Handing over the raw string as well as the pieces is deliberate: the pieces
 /// are what a plugin switches on, and the string is what it logs when none of
@@ -221,7 +221,7 @@ fn clip(text: &str, limit: usize) -> String {
     text.chars().take(limit).collect()
 }
 
-/// Start answering `dsh://` links.
+/// Start answering `harnessdeck://` links.
 ///
 /// Two paths reach here and both end in the same place. On macOS the system
 /// hands the URL to the running app; on Windows and Linux it starts the app
@@ -231,7 +231,7 @@ fn clip(text: &str, limit: usize) -> String {
 pub fn wire(app: &AppHandle) {
     // Nothing has registered the scheme in a development build, because
     // registering it is the installer's job. Pointed at the binary that is
-    // running, so a `dsh://` link opens the build being worked on.
+    // running, so a `harnessdeck://` link opens the build being worked on.
     #[cfg(debug_assertions)]
     let _ = app.deep_link().register_all();
 
@@ -295,35 +295,35 @@ mod tests {
     /// slashes somebody typed.
     #[test]
     fn a_link_is_read_as_a_route_and_its_arguments() {
-        let link = read("dsh://profile/lab?restart=1&from=cli");
+        let link = read("harnessdeck://profile/lab?restart=1&from=cli");
 
         assert_eq!(link.route, "profile/lab");
         assert_eq!(link.query["restart"], "1");
         assert_eq!(link.query["from"], "cli");
-        assert_eq!(link.url, "dsh://profile/lab?restart=1&from=cli");
+        assert_eq!(link.url, "harnessdeck://profile/lab?restart=1&from=cli");
     }
 
     /// Both spellings of the same instruction have to read the same, because
     /// both are what people type.
     #[test]
     fn the_number_of_slashes_is_not_part_of_the_route() {
-        assert_eq!(read("dsh://open").route, "open");
-        assert_eq!(read("dsh:open").route, "open");
-        assert_eq!(read("dsh://open/").route, "open");
+        assert_eq!(read("harnessdeck://open").route, "open");
+        assert_eq!(read("harnessdeck:open").route, "open");
+        assert_eq!(read("harnessdeck://open/").route, "open");
     }
 
     /// A bare scheme is a link too — "come to the front" is a whole instruction.
     #[test]
     fn a_link_with_nothing_in_it_still_reads() {
-        assert_eq!(read("dsh://").route, "");
-        assert!(read("dsh://").query.is_empty());
+        assert_eq!(read("harnessdeck://").route, "");
+        assert!(read("harnessdeck://").query.is_empty());
     }
 
     /// Percent-encoding is how a route argument carries a path or a space, and a
     /// plugin should never have to undo it twice.
     #[test]
     fn arguments_arrive_decoded() {
-        let link = read("dsh://plugin/install?name=%40scope%2Fthing&note=two%20words");
+        let link = read("harnessdeck://plugin/install?name=%40scope%2Fthing&note=two%20words");
 
         assert_eq!(link.query["name"], "@scope/thing");
         assert_eq!(link.query["note"], "two words");

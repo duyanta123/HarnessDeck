@@ -2,10 +2,10 @@
 members = [".", "crates/proc-guard", "crates/node-runtime"]
 
 [workspace.package]
-version = "0.8.0"
+version = "0.1.0"
 edition = "2021"
 license = "MIT"
-repository = "https://github.com/Moresyl/dsh-studio"
+repository = "https://github.com/duyanta123/HarnessDeck"
 
 [workspace.dependencies]
 proc-guard = { path = "crates/proc-guard" }
@@ -17,19 +17,19 @@ tokio = { version = "1", features = ["full", "parking_lot"] }
 url = "2"
 
 [package]
-name = "dsh-studio"
+name = "harnessdeck"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 repository.workspace = true
-description = "Native desktop studio for DeepSeek Harness"
+description = "HarnessDeck is a native desktop shell for DeepSeek Harness"
 
 [lib]
-name = "dsh_studio_lib"
+name = "harnessdeck_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [[bin]]
-name = "dsh-studio"
+name = "harnessdeck"
 path = "src/main.rs"
 
 [build-dependencies]

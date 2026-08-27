@@ -33,7 +33,7 @@ describe('checkForUpdate', () => {
 
     await expect(checkForUpdate()).resolves.toEqual({
       version: '0.4.0',
-      url: 'https://github.com/Moresyl/dsh-studio/releases/tag/v0.4.0',
+      url: 'https://github.com/duyanta123/HarnessDeck/releases/tag/v0.4.0',
       notes: 'fixed it',
       published: '2026-08-18T00:00:00Z',
     })

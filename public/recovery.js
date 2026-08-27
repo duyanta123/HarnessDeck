@@ -4,7 +4,7 @@
   const text = chinese
     ? {
         title: '应用界面未能启动',
-        summary: 'DSH Studio 已打开独立恢复界面；它不依赖 React、Harness、Node 或网络。',
+        summary: 'HarnessDeck 已打开独立恢复界面；它不依赖 React、Harness、Node 或网络。',
         loading: '正在读取启动证据…',
         retry: '重试界面',
         export: '导出诊断包',
@@ -16,7 +16,7 @@
     : {
         title: 'The application interface did not start',
         summary:
-          'DSH Studio opened a recovery surface that does not depend on React, Harness, Node, or the network.',
+          'HarnessDeck opened a recovery surface that does not depend on React, Harness, Node, or the network.',
         loading: 'Loading startup evidence…',
         retry: 'Retry interface',
         export: 'Export diagnostics',

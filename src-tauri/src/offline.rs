@@ -119,7 +119,7 @@ fn read(root: &Path) -> Result<Payload> {
         || manifest.pnpm.version != crate::harness::install::PNPM_VERSION
     {
         return Err(Error::Install(
-            "offline Harness/pnpm runtime does not match this DSH Studio build".into(),
+            "offline Harness/pnpm runtime does not match this HarnessDeck build".into(),
         ));
     }
     if node_runtime::Version::parse(&manifest.node.version).is_none() {

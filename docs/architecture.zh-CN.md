@@ -2,7 +2,7 @@
 
 [English](architecture.md)
 
-DSH Studio 是 Harness 的宿主，不是其 fork。React WebView 只通过列入 Tauri invoke handler 的命令访问 Rust；Harness 运行在受进程树保护的子进程中，只监听回环地址。Rust supervisor 解析就绪输出、探测健康状态、退避重启，并在退出时由 Windows Job Object 或 Unix 进程组回收整棵子进程树。
+HarnessDeck 是 Harness 的宿主，不是其 fork。React WebView 只通过列入 Tauri invoke handler 的命令访问 Rust；Harness 运行在受进程树保护的子进程中，只监听回环地址。Rust supervisor 解析就绪输出、探测健康状态、退避重启，并在退出时由 Windows Job Object 或 Unix 进程组回收整棵子进程树。
 
 供应链分成三条边界：Node 从官方发布索引解析并以官方 SHA-256 验证；Harness 固定到已验证的精确 npm 版本并通过 staging/backup 事务替换；插件目录不能提供命令，只能给出精确 npm 包和版本，实际安装仍经过 npm manifest 与 peer 兼容预检。
 

@@ -93,6 +93,13 @@ export function EnvironmentChecks() {
           : undefined,
     },
     {
+      key: 'project',
+      label: t('check.project'),
+      value: environment?.project ?? t('check.workspace.checking'),
+      title: environment?.workspace,
+      state: environment === null ? 'neutral' : 'ok',
+    },
+    {
       key: 'workspace',
       label: t('check.workspace'),
       value:

@@ -111,6 +111,10 @@ fn checked_generation(current: &str, offered: &str) -> Result<()> {
 #[tauri::command]
 pub fn profile_select(name: String, state: State<'_, AppState>) -> Result<Roster> {
     super::select(&name)?;
+    // The active project owns the profile for the next launch. The standalone
+    // profile chip also changes working context, so record that on the project
+    // rather than letting the next start disagree with the chip.
+    crate::projects::bind_active_profile(&name)?;
     state.supervisor.note(
         Stream::Stdout,
         format!("profile {name} selected; restart the harness to run it"),

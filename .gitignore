@@ -1,12 +1,15 @@
 # Dependencies
 node_modules/
 .pnpm-store/
+.corepack/
 
 # Build output
 dist/
 dist-ssr/
 src-tauri/target/
 src-tauri/target-*/
+# Local Cargo mirror/credentials (machine-specific)
+src-tauri/.cargo/
 src-tauri/gen/
 
 # Runtime artifacts staged for packaging
@@ -49,3 +52,4 @@ coverage/
 .env
 .env.*
 !.env.example
+brand-icons/

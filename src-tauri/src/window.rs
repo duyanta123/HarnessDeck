@@ -56,7 +56,7 @@ const CEILING: usize = 12;
 const CASCADE: f64 = 30.0;
 
 /// What every window is called before its number is added.
-const TITLE: &str = "DSH Studio";
+const TITLE: &str = "HarnessDeck";
 
 const DEFAULT_WIDTH: f64 = 1360.0;
 const DEFAULT_HEIGHT: f64 = 880.0;
@@ -330,7 +330,7 @@ pub fn reveal<R: tauri::Runtime>(window: &WebviewWindow<R>) {
 /// The window a request from outside the application should land on.
 ///
 /// The first one while it is still there: the tray, a second launch and a
-/// `dsh://` link all mean "bring the application back", and that is the window
+/// `harnessdeck://` link all mean "bring the application back", and that is the window
 /// the application is built around. But it can be closed while another window
 /// keeps the process alive, and then any window is a better answer than none —
 /// the alternative is a tray icon whose Open does nothing at all.

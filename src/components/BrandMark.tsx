@@ -25,7 +25,7 @@ export function BrandMark({ size = 64, className }: BrandMarkProps) {
       viewBox="0 0 1024 1024"
       className={className}
       role="img"
-      aria-label="DSH Studio"
+      aria-label="HarnessDeck"
     >
       <defs>
         <linearGradient id={tile} x1="0" y1="0" x2="0.35" y2="1">

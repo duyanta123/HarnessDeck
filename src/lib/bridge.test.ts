@@ -104,7 +104,7 @@ group('accepts', () => {
 
 group('answer', () => {
   it('hands the handshake back as the desktop described it', async () => {
-    const offer = { protocol: PROTOCOL, app: 'DSH Studio', capabilities: ['notify'], link: null }
+    const offer = { protocol: PROTOCOL, app: 'HarnessDeck', capabilities: ['notify'], link: null }
     vi.mocked(ipc.desktopOffer).mockResolvedValue(offer as never)
 
     await expect(answer(request('hello'))).resolves.toBe(offer)
@@ -372,7 +372,7 @@ group('desktop frame lifetime', () => {
     await Promise.resolve()
     expect(tree.posted).toHaveBeenCalledTimes(2)
 
-    const opened = { url: 'dsh://open', route: 'open', query: {} }
+    const opened = { url: 'harnessdeck://open', route: 'open', query: {} }
     link?.(opened)
     expect(tree.posted).toHaveBeenLastCalledWith(
       { dsh: PROTOCOL, event: 'link', link: opened },

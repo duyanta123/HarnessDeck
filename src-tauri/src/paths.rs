@@ -11,7 +11,7 @@ use std::path::PathBuf;
 pub fn app_data_dir() -> PathBuf {
     dirs::data_local_dir()
         .unwrap_or_else(|| PathBuf::from("."))
-        .join("dsh-studio")
+        .join("harnessdeck")
 }
 
 /// Prefix the managed harness is installed into, as an npm project root.

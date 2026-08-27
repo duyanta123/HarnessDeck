@@ -248,7 +248,7 @@ pub fn startup_notification<R: Runtime>(
     Ok(report(&app, &keys))
 }
 
-/// Ask the operating system to register DSH Studio and send one explicit test
+/// Ask the operating system to register HarnessDeck and send one explicit test
 /// notification. macOS adds an application to Notification Center when its
 /// first native notification is delivered; keeping this behind a button avoids
 /// interrupting a first launch while giving Settings a deterministic repair
@@ -263,7 +263,7 @@ pub fn startup_notification_test<R: Runtime>(
     })?;
     crate::desktop::notify(
         &app,
-        crate::locale::pick("DSH Studio notifications", "DSH Studio 通知"),
+        crate::locale::pick("HarnessDeck notifications", "HarnessDeck 通知"),
         crate::locale::pick("Notifications are working.", "通知功能正常。"),
     )?;
     Ok(report(&app, &keys))

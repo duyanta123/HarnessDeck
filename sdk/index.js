@@ -27,10 +27,10 @@ export function requireDshStudio(scope = globalThis) {
       : undefined
   if (seen !== undefined) {
     throw new Error(
-      `DSH Studio Protocol ${String(seen)} is not supported; this plugin requires Protocol ${DSH_STUDIO_PROTOCOL}`,
+      `HarnessDeck Protocol ${String(seen)} is not supported; this plugin requires Protocol ${DSH_STUDIO_PROTOCOL}`,
     )
   }
-  throw new Error('DSH Studio Protocol 3 is not available in this page')
+  throw new Error('HarnessDeck Protocol 3 is not available in this page')
 }
 
 /** Check a capability returned by hello() without trusting a malformed value. */
@@ -54,7 +54,7 @@ export function onDshStudioWorkspaceDrop(handler, scope = globalThis) {
   return requireDshStudio(scope).workspace.onDrop(handler)
 }
 
-/** Feature-detect the read-only Host service without requiring DSH Studio. */
+/** Feature-detect the read-only Host service without requiring HarnessDeck. */
 export function getDshStudioHost(ctx) {
   if ((typeof ctx !== 'object' && typeof ctx !== 'function') || ctx === null) {
     return undefined
@@ -76,8 +76,8 @@ export function requireDshStudioHost(ctx) {
       : undefined
   if (seen !== undefined) {
     throw new Error(
-      `DSH Studio Host Protocol ${String(seen)} is not supported; this plugin requires Host Protocol ${DSH_STUDIO_HOST_PROTOCOL}`,
+      `HarnessDeck Host Protocol ${String(seen)} is not supported; this plugin requires Host Protocol ${DSH_STUDIO_HOST_PROTOCOL}`,
     )
   }
-  throw new Error('DSH Studio Host Protocol 1 is not available in this Harness')
+  throw new Error('HarnessDeck Host Protocol 1 is not available in this Harness')
 }

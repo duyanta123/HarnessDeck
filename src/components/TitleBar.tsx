@@ -3,6 +3,7 @@ import { getCurrentWindow } from '@tauri-apps/api/window'
 
 import { BrandMark } from '@/components/BrandMark'
 import { ProfileSwitch } from '@/components/ProfileSwitch'
+import { ProjectSwitch } from '@/components/ProjectSwitch'
 import { ThemeSwitch } from '@/components/ThemeSwitch'
 import { t } from '@/lib/i18n'
 import * as ipc from '@/lib/ipc'
@@ -21,6 +22,8 @@ interface TitleBarProps {
   onPresentation?: (mode: Presentation) => void
   /** Open the profile manager. Absent while the first-run guide is up. */
   onManageProfiles?: () => void
+  /** Open the settings pane at the project list. Absent while the guide is up. */
+  onManageProjects?: () => void
 }
 
 /**
@@ -37,7 +40,13 @@ interface TitleBarProps {
  * profile chip is here for the same reason: which stack is running is a property
  * of the window, and this strip is what survives the harness taking the rest.
  */
-export function TitleBar({ serving, mode, onPresentation, onManageProfiles }: TitleBarProps) {
+export function TitleBar({
+  serving,
+  mode,
+  onPresentation,
+  onManageProfiles,
+  onManageProjects,
+}: TitleBarProps) {
   const appWindow = getCurrentWindow()
   const [maximized, setMaximized] = useState(false)
 
@@ -99,7 +108,7 @@ export function TitleBar({ serving, mode, onPresentation, onManageProfiles }: Ti
     >
       <div data-tauri-drag-region className="flex flex-1 items-center gap-2 self-stretch pl-2.5">
         <BrandMark size={15} className="rounded-[4px]" />
-        <span className="text-[12px] font-medium text-muted">DSH Studio</span>
+        <span className="text-[12px] font-medium text-muted">HarnessDeck</span>
 
         {/* Windows opened for a task look alike, and the number is what makes
             them referable — the same one the system title carries, so the
@@ -116,6 +125,7 @@ export function TitleBar({ serving, mode, onPresentation, onManageProfiles }: Ti
         {serving && onPresentation && <ViewSwitch mode={mode} onChoose={onPresentation} />}
 
         {onManageProfiles && <ProfileSwitch onManage={onManageProfiles} />}
+        {onManageProjects && <ProjectSwitch onManage={onManageProjects} />}
       </div>
 
       {/* Beside the window buttons rather than inside a pane, because the theme

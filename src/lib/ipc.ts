@@ -34,6 +34,8 @@ export interface Environment {
   /** An interrupted install that could not be recovered automatically. */
   harnessProblem: string | null
   harnessEntry: string
+  /** The project the next Harness start serves. */
+  project: string
   workspace: string
   workspaceAdmission: {
     state: 'safe' | 'warning' | 'blocked'
@@ -208,6 +210,44 @@ export const workspaceSelect = (path: string): Promise<Environment['workspaceAdm
 /** Inspect a candidate without changing the working directory for the next start. */
 export const workspaceInspect = (path: string): Promise<Environment['workspaceAdmission']> =>
   invoke('workspace_inspect', { path })
+/* -------------------------------------------------------------------------- */
+/* Projects                                                                   */
+/* -------------------------------------------------------------------------- */
+
+/** A project: one local folder plus the DSH profile that serves it. */
+export interface Project {
+  id: string
+  name: string
+  path: string
+  profile: string
+  lastOpenedAt: number
+}
+
+export interface ProjectRoster {
+  projects: Project[]
+  selected: string
+}
+
+export const projectsList = (): Promise<ProjectRoster> => invoke('projects_list')
+
+export const projectsAdd = (
+  path: string,
+  name?: string,
+  profile?: string,
+): Promise<ProjectRoster> =>
+  invoke('projects_add', { path, name: name ?? null, profile: profile ?? null })
+
+export const projectsSelect = (id: string): Promise<ProjectRoster> =>
+  invoke('projects_select', { id })
+
+export const projectsRemove = (id: string): Promise<ProjectRoster> =>
+  invoke('projects_remove', { id })
+
+export const projectsRename = (id: string, name: string): Promise<ProjectRoster> =>
+  invoke('projects_rename', { id, name })
+
+export const projectsBindProfile = (id: string, profile: string): Promise<ProjectRoster> =>
+  invoke('projects_bind_profile', { id, profile })
 
 /* -------------------------------------------------------------------------- */
 /* Plugins                                                                    */
@@ -839,7 +879,7 @@ export const windowOpen = (): Promise<void> => invoke('window_open')
  * shells are already emitted from Rust to every window, and echoing one of them
  * would be a second source of truth for something that has one.
  */
-export type Shared = 'theme' | 'profiles' | 'presentation'
+export type Shared = 'theme' | 'profiles' | 'presentation' | 'projects'
 
 /** Channel the windows use to poke each other. */
 const SHARED_CHANNEL = 'shell://changed'
@@ -862,7 +902,7 @@ export const onSharedChange = (handler: (subject: Shared) => void): Promise<Unli
 /* Desktop service interface                                                  */
 /* -------------------------------------------------------------------------- */
 
-/** A `dsh://` link, already taken apart — see `src-tauri/src/desktop/mod.rs`. */
+/** A `harnessdeck://` link, already taken apart — see `src-tauri/src/desktop/mod.rs`. */
 export interface DesktopLink {
   url: string
   /** Host and path as one path, slashes trimmed: `profile/lab`. */
@@ -883,7 +923,7 @@ export interface DesktopOffer {
   link: DesktopLink | null
 }
 
-/** Channel `desktop/mod.rs` forwards `dsh://` links on. */
+/** Channel `desktop/mod.rs` forwards `harnessdeck://` links on. */
 const LINK_CHANNEL = 'desktop://link'
 
 /**

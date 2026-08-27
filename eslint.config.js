@@ -14,7 +14,16 @@ export default [
   // `.workflow` is the gitignored scratch directory: throwaway reproductions
   // written to be run once and deleted, which is not something to hold to the
   // standard the shipped source is held to.
-  { ignores: ['dist/**', 'node_modules/**', 'src-tauri/**', '.workflow/**'] },
+  {
+    ignores: [
+      'dist/**',
+      'node_modules/**',
+      'src-tauri/**',
+      '.workflow/**',
+      '.corepack/**',
+      '.pnpm-store/**',
+    ],
+  },
 
   ...tsPlugin.configs['flat/recommended'],
 

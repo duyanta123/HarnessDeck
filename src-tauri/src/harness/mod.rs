@@ -37,6 +37,7 @@ pub struct Environment {
     pub expected_harness_version: String,
     pub harness_problem: Option<String>,
     pub harness_entry: PathBuf,
+pub project: String,
     pub workspace: PathBuf,
     pub workspace_admission: crate::workspace::Admission,
 }
@@ -56,7 +57,10 @@ pub fn environment() -> Environment {
     let harness_installed = harness_entry.is_file() && harness_version.is_some();
     let harness_compatible = install::runtime_compatible(&paths::harness_dir());
 
-    let workspace = crate::workspace::selected();
+    let project = crate::projects::active()
+        .map(|project| project.name)
+        .unwrap_or_else(|| "Default project".to_string());
+    let workspace = crate::projects::active_workspace().unwrap_or_else(crate::workspace::selected);
     let workspace_admission = crate::workspace::inspect(&workspace);
     Environment {
         node,
@@ -68,6 +72,7 @@ pub fn environment() -> Environment {
         expected_harness_version: install::VERSION.to_string(),
         harness_problem,
         harness_entry,
+        project,
         workspace,
         workspace_admission,
     }
@@ -85,7 +90,7 @@ pub fn launch_plan() -> Result<LaunchPlan> {
     }
     if !environment.harness_compatible {
         return Err(Error::Install(format!(
-            "the installed Harness runtime is {}, but DSH Studio requires {}; reinstall it from the Environment panel",
+            "the installed Harness runtime is {}, but HarnessDeck requires {}; reinstall it from the Environment panel",
             environment
                 .harness_version
                 .as_deref()
@@ -101,7 +106,7 @@ pub fn launch_plan() -> Result<LaunchPlan> {
                 .unwrap_or_else(|| "the workspace is not safe to use".into()),
         ));
     }
-    let profile = crate::profiles::selected();
+    let profile = crate::projects::active_profile().unwrap_or_else(crate::profiles::selected);
     let serves_studio = crate::profiles::prepare_for_studio(&profile)?;
     if let Some(problem) = crate::plugins::recovery::blocking_problem(&profile) {
         return Err(Error::Plugin(problem));

@@ -16,18 +16,18 @@ fn main() {
         Ok(Action::SmokeTest) => {}
         Ok(Action::ExportDiagnostics) => {
             attach_parent_console();
-            match dsh_studio_lib::export_diagnostics_cli() {
+            match harnessdeck_lib::export_diagnostics_cli() {
                 Ok(path) => println!("{}", path.display()),
                 Err(cause) => {
-                    eprintln!("dsh-studio: could not export diagnostics: {cause}");
+                    eprintln!("harnessdeck: could not export diagnostics: {cause}");
                     std::process::exit(1);
                 }
             }
         }
-        Ok(Action::Launch) => dsh_studio_lib::run(),
+        Ok(Action::Launch) => harnessdeck_lib::run(),
         Err(cause) => {
             attach_parent_console();
-            eprintln!("dsh-studio: {cause}");
+            eprintln!("harnessdeck: {cause}");
             std::process::exit(2);
         }
     }

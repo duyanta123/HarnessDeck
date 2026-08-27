@@ -35,6 +35,7 @@ const en = {
   'check.workspace.local': 'local filesystem',
   'check.workspace.warning': 'Unqualified filesystem',
   'check.workspace.blocked': 'Unsafe filesystem · start blocked',
+  'check.project': 'Project',
 
   'service.address': 'Address',
   'service.process': 'Process',
@@ -47,7 +48,7 @@ const en = {
   'source.fnm': 'via fnm',
   'source.volta': 'via Volta',
   'source.system': 'system install',
-  'source.managed': 'installed by DSH Studio',
+  'source.managed': 'installed by HarnessDeck',
 
   'action.start': 'Start harness',
   'action.starting': 'Starting…',
@@ -84,6 +85,16 @@ const en = {
   'workspace.restartBody':
     'The working directory is fixed when Harness starts. Restart now to use this workspace for new sessions and tools.',
   'workspace.restartConfirm': 'Restart here',
+  'project.switch': 'Switch project',
+  'project.manage': 'Manage projects',
+  'project.restartTitle': 'Restart the Harness?',
+  'project.restartBody':
+    'The active project chooses the working directory and the profile. Restart now to use this project for new sessions and tools.',
+  'project.restartConfirm': 'Restart here',
+  'project.new': 'Add project folder…',
+  'project.profile': 'Profile',
+  'project.rename': 'Rename project',
+  'project.remove': 'Remove project',
 
   'log.empty': 'No output yet.',
   'log.title': 'Harness output',
@@ -515,7 +526,7 @@ const en = {
   'settings.jobFailedHint': 'Notify when a Harness background job fails.',
   'settings.notificationTest': 'Test notifications',
   'settings.notificationTestHint':
-    'Register DSH Studio with the operating system and send one test message.',
+    'Register HarnessDeck with the operating system and send one test message.',
   'settings.notificationTestAction': 'Send test',
 
   'about.title': 'About',
@@ -604,14 +615,15 @@ const en = {
   'dialog.error.copied': 'Copied',
   'dialog.error.close': 'Close',
   'dialog.failure.title': 'Operation failed',
-  'dialog.failure.body': 'The requested action did not complete. You can copy the details for diagnosis.',
+  'dialog.failure.body':
+    'The requested action did not complete. You can copy the details for diagnosis.',
   'dialog.failure.unknown': 'The operation failed without error details.',
   'plugins.error.title': 'Plugin operation failed',
   'plugins.error.body':
     'The operation did not finish. The exact reason is shown below and can be copied for a bug report.',
   'recovery.title': 'Plugin profile recovered',
   'recovery.restored':
-    'DSH Studio found an interrupted plugin operation and restored the profile before Harness started.',
+    'HarnessDeck found an interrupted plugin operation and restored the profile before Harness started.',
   'recovery.failed':
     'The interrupted operation could not be restored automatically. The diagnostic report contains the recovery error.',
   'recovery.profile': 'Profile',
@@ -633,7 +645,7 @@ const en = {
   'recovery.previewStart': 'Start the failed profile {profile} and wait for its readiness check.',
   'recovery.previewDisable': 'Disable {subject} in {profile}; no package is deleted.',
   'recovery.changedGuard':
-    'If the profile changed after this preview, DSH Studio stops and asks for a fresh review.',
+    'If the profile changed after this preview, HarnessDeck stops and asks for a fresh review.',
   'recovery.noRetry':
     'This operation cannot be replayed safely. The restored profile is unchanged.',
   'recovery.exporting': 'Building diagnostics…',
@@ -642,7 +654,7 @@ const en = {
   'recovery.back': 'Back',
   'profileRecovery.title': 'Profile startup recovered',
   'profileRecovery.rolledBack':
-    'Profile {failed} could not start. DSH Studio automatically returned to the last-known-good profile {recovered}.',
+    'Profile {failed} could not start. HarnessDeck automatically returned to the last-known-good profile {recovered}.',
   'profileRecovery.noFallback':
     'Profile {failed} could not start and no different healthy profile was available.',
   'profileRecovery.disableHint':
@@ -684,6 +696,7 @@ const zh: Record<MessageKey, string> = {
   'check.workspace.local': '本地文件系统',
   'check.workspace.warning': '未验证的文件系统',
   'check.workspace.blocked': '文件系统不安全 · 已阻止启动',
+  'check.project': '项目',
 
   'service.address': '地址',
   'service.process': '进程',
@@ -696,7 +709,7 @@ const zh: Record<MessageKey, string> = {
   'source.fnm': '来自 fnm',
   'source.volta': '来自 Volta',
   'source.system': '系统安装',
-  'source.managed': '由 DSH Studio 安装',
+  'source.managed': '由 HarnessDeck 安装',
 
   'action.start': '启动 Harness',
   'action.starting': '启动中…',
@@ -730,6 +743,15 @@ const zh: Record<MessageKey, string> = {
   'workspace.restartBody':
     '工作目录在 Harness 启动时确定。立即重启后，新会话和工具将使用这个工作区。',
   'workspace.restartConfirm': '在这里重启',
+  'project.switch': '切换项目',
+  'project.manage': '管理项目',
+  'project.restartTitle': '要重启 Harness 吗？',
+  'project.restartBody': '当前项目决定工作目录与 profile。立即重启后，新会话和工具将使用这个项目。',
+  'project.restartConfirm': '在这里重启',
+  'project.new': '添加项目文件夹…',
+  'project.profile': 'Profile',
+  'project.rename': '重命名项目',
+  'project.remove': '删除项目',
 
   'log.empty': '暂无输出。',
   'log.title': 'Harness 输出',
@@ -1133,7 +1155,7 @@ const zh: Record<MessageKey, string> = {
   'settings.jobFailed': '后台任务失败',
   'settings.jobFailedHint': 'Harness 后台任务执行失败时通知。',
   'settings.notificationTest': '测试通知',
-  'settings.notificationTestHint': '向操作系统注册 DSH Studio，并发送一条测试消息。',
+  'settings.notificationTestHint': '向操作系统注册 HarnessDeck，并发送一条测试消息。',
   'settings.notificationTestAction': '发送测试',
 
   'about.title': '关于',
@@ -1245,7 +1267,7 @@ const zh: Record<MessageKey, string> = {
   'recovery.previewRemove': '移除扩展包 {subject}。',
   'recovery.previewStart': '启动失败配置 {profile}，并等待健康检查结果。',
   'recovery.previewDisable': '在 {profile} 中停用 {subject}，不会删除扩展包。',
-  'recovery.changedGuard': '如果配置在预览后发生变化，DSH Studio 会停止操作并要求重新检查。',
+  'recovery.changedGuard': '如果配置在预览后发生变化，HarnessDeck 会停止操作并要求重新检查。',
   'recovery.noRetry': '此操作无法安全重放，已恢复的配置保持不变。',
   'recovery.exporting': '正在生成诊断包…',
   'recovery.savedAt': '已保存到 {path}',
@@ -1253,7 +1275,7 @@ const zh: Record<MessageKey, string> = {
   'recovery.back': '返回',
   'profileRecovery.title': '配置启动失败已恢复',
   'profileRecovery.rolledBack':
-    '配置 {failed} 无法启动，DSH Studio 已自动回退到上一个健康配置 {recovered}。',
+    '配置 {failed} 无法启动，HarnessDeck 已自动回退到上一个健康配置 {recovered}。',
   'profileRecovery.noFallback': '配置 {failed} 无法启动，并且没有其他已验证的健康配置可回退。',
   'profileRecovery.disableHint': '再次尝试前，可以先停用故障配置中正在启用的第三方插件。',
   'profileRecovery.disable': '停用',

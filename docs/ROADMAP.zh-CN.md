@@ -1,4 +1,4 @@
-# DSH Studio 路线图与当前对标结论
+# HarnessDeck 路线图与当前对标结论
 
 [English](ROADMAP.md)
 
@@ -15,7 +15,7 @@ package 自报 2.0.3，但前一个已验证快照
 
 ## 结论
 
-功能面已经不是“追平一个桌面壳”：DSH Studio 同时提供 Windows/macOS/Linux、轻量与完整
+功能面已经不是“追平一个桌面壳”：HarnessDeck 同时提供 Windows/macOS/Linux、轻量与完整
 离线包、插件市场、受认证的手机远程、多 Profile、内置终端、多窗口、会话全文搜索、Token
 与费用统计、会话导出、命令面板、崩溃/诊断恢复和受限插件协议。
 
@@ -29,7 +29,7 @@ package 自报 2.0.3，但前一个已验证快照
 
 ## 当前能力矩阵
 
-| 能力             | 对标最新 `87047b54`                 | DSH Studio 当前状态                                                                                      |
+| 能力             | 对标最新 `87047b54`                 | HarnessDeck 当前状态                                                                                      |
 | ---------------- | ----------------------------------- | -------------------------------------------------------------------------------------------------------- |
 | 零系统 Node 启动 | 内置 Electron/运行时                | 轻量版按需下载并校验官方 Node；完整离线版携带 SHA-256 固定的 Node、Harness、pnpm                         |
 | 真实运行时门禁   | 有 Profile boot smoke               | 冷安装完整 511 包图，在 Windows/Linux/macOS CI 启动真实 Profile、Loader、Web 与 Host 探针                |

@@ -507,7 +507,7 @@ mod tests {
     /// archive layout, the checksum document's format and the mirror's routing
     /// are all facts about somebody else's server, and a unit test can only
     /// assert what this file already believes about them. Run it with
-    /// `cargo test -p dsh-studio -- --ignored --nocapture` after touching the
+    /// `cargo test -p harnessdeck -- --ignored --nocapture` after touching the
     /// catalog or the extractor.
     #[tokio::test]
     #[ignore = "downloads a Node release from the internet"]

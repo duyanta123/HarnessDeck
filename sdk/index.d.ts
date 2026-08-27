@@ -12,7 +12,7 @@ export interface DshStudioHostProfile {
 
 export interface DshStudioHost {
   readonly protocol: 1
-  readonly studio: { readonly name: 'DSH Studio'; readonly version: string }
+  readonly studio: { readonly name: 'HarnessDeck'; readonly version: string }
   readonly harness: { readonly version: string }
   readonly platform: string
   readonly capabilities: readonly ('profiles.read' | 'runtime.read')[]

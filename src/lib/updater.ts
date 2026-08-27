@@ -1,13 +1,13 @@
 import type { DownloadEvent } from '@tauri-apps/plugin-updater'
 
-const RELEASES = 'https://github.com/Moresyl/dsh-studio/releases'
+const RELEASES = 'https://github.com/duyanta123/HarnessDeck/releases'
 const CHECK_TIMEOUT_MS = 15_000
 const UPDATE_NETWORK_HELP =
   'Could not reach the signed update feed. Check GitHub access or HTTPS_PROXY, then retry; Full / Offline installers are available from the Releases page. / 无法连接已签名更新源，请检查 GitHub 网络或 HTTPS_PROXY 后重试；也可从 Releases 页面下载 Full / Offline 安装包。'
 const UPDATE_CHANGED =
   'The available release changed after you reviewed it. Review the new release notes before installing. / 可用版本在确认后发生了变化，请先查看新版本说明再安装。'
 const RELAUNCH_FAILED =
-  'The update was installed, but DSH Studio could not relaunch. Close and start the app again to finish updating. / 更新已安装，但 DSH Studio 无法自动重启；请关闭并重新启动应用以完成更新。'
+  'The update was installed, but HarnessDeck could not relaunch. Close and start the app again to finish updating. / 更新已安装，但 HarnessDeck 无法自动重启；请关闭并重新启动应用以完成更新。'
 
 export interface Release {
   /** The published version, without a leading `v`. */

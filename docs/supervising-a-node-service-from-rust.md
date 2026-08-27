@@ -4,7 +4,7 @@
 > Studio's implementation, tests, and release notes. The linked source is the
 > authority for every behavioral claim below.
 
-DSH Studio is a Tauri 2 desktop host for DeepSeek Harness, whose user interface
+HarnessDeck is a Tauri 2 desktop host for DeepSeek Harness, whose user interface
 is normally served by a local Node process. The interesting part is not spawning
 `node`; it is making a web service behave like a desktop-owned resource across
 Windows, macOS, and Linux.
@@ -17,7 +17,7 @@ entire descendant tree to an operating-system lifetime primitive.
 ## Let the kernel choose the port
 
 Scanning for an unused port and then launching a server on it contains a race:
-another process can bind between the scan and the child's `bind`. DSH Studio
+another process can bind between the scan and the child's `bind`. HarnessDeck
 instead launches the harness with `--port 0`. The kernel selects an ephemeral
 port atomically, and the harness announces the address on stdout:
 
@@ -89,7 +89,7 @@ resulting exit for a crash and revive it.
 An agent harness launches tools, and those tools can launch more processes.
 Killing only the `node` handle does not reliably reclaim its descendants.
 
-DSH Studio isolates this platform behavior in the small `proc-guard` crate. On
+HarnessDeck isolates this platform behavior in the small `proc-guard` crate. On
 Windows, children are assigned to a Job Object configured with
 `JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE`; the kernel terminates the job when its
 owner disappears. On Unix, children enter their own process group and shutdown

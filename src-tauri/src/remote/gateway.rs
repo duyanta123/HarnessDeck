@@ -411,9 +411,9 @@ const REFUSED: &str = concat!(
     "background:#0d0f12;color:#e6e8ec}div{max-width:22rem;padding:2rem;text-align:center}",
     "p{color:#9aa0aa;margin:.5rem 0 0}</style>",
     "<div><strong>Scan a fresh code</strong>",
-    "<p>A pairing code works once and expires after two minutes. Open DSH Studio",
+    "<p>A pairing code works once and expires after two minutes. Open HarnessDeck",
     " for a new one.</p>",
-    "<p>配对码只能用一次，两分钟后失效。请在 DSH Studio 中换一个新的二维码再扫。</p></div>"
+    "<p>配对码只能用一次，两分钟后失效。请在 HarnessDeck 中换一个新的二维码再扫。</p></div>"
 );
 
 const UNAVAILABLE: &str = concat!(

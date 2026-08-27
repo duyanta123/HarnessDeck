@@ -122,7 +122,7 @@
       },
     }),
 
-    /** Hear `dsh://` links as they arrive. Returns the way to stop hearing them. */
+    /** Hear `harnessdeck://` links as they arrive. Returns the way to stop hearing them. */
     onLink: (handler) => {
       listeners.add(handler)
       return () => listeners.delete(handler)
