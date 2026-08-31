@@ -333,7 +333,13 @@ impl Terminals {
             command.env("COLORTERM", "truecolor");
         }
 
-        command.cwd(paths::default_workspace_dir());
+        // A terminal is a view onto the active project just like the Harness
+        // itself. Resolve the workspace when the shell is created so switching
+        // projects later does not move an already-open shell underneath the
+        // user's feet.
+        let workspace = crate::projects::active_workspace()
+            .unwrap_or_else(paths::default_workspace_dir);
+        command.cwd(workspace);
         command
     }
 }

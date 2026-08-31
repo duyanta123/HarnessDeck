@@ -3,7 +3,10 @@
 use std::path::PathBuf;
 
 use super::Roster;
-use crate::error::Result;
+use crate::error::{Error, Result};
+use crate::harness::commands::AppState;
+use crate::harness::supervisor::Status;
+use tauri::State;
 
 #[tauri::command]
 pub fn projects_list() -> Result<Roster> {
@@ -25,7 +28,16 @@ pub fn projects_select(id: String) -> Result<Roster> {
 }
 
 #[tauri::command]
-pub fn projects_remove(id: String) -> Result<Roster> {
+pub fn projects_remove(id: String, state: State<'_, AppState>) -> Result<Roster> {
+    let running = !matches!(
+        state.supervisor.status(),
+        Status::Stopped | Status::Failed { .. }
+    );
+    if running && super::is_active(&id) {
+        return Err(Error::Project(
+            "the active project cannot be removed while Harness is running; stop it first".into(),
+        ));
+    }
     super::remove(&id)
 }
 

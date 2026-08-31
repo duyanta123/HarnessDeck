@@ -41,6 +41,7 @@ describe('selecting a native workspace', () => {
     expect(ipc.projectsAdd).toHaveBeenCalledWith('D:\\work')
     expect(useHarness.getState().inspect).toHaveBeenCalledTimes(1)
     expect(useHarness.getState().stop).not.toHaveBeenCalled()
+    expect(useProjects.getState().working).toBeNull()
   })
 
   it('offers and performs the restart needed by a running Harness', async () => {
@@ -53,6 +54,7 @@ describe('selecting a native workspace', () => {
     expect(await changing).toBe(true)
     expect(useHarness.getState().stop).toHaveBeenCalledTimes(1)
     expect(useHarness.getState().start).toHaveBeenCalledTimes(1)
+    expect(useProjects.getState().working).toBeNull()
   })
 
   it('shows the backend refusal and leaves the current Harness alone', async () => {
@@ -61,9 +63,38 @@ describe('selecting a native workspace', () => {
     expect(await switchWorkspace('E:\\unsafe')).toBe(false)
     expect(useProjects.getState().error).toBe('removable workspaces are blocked')
     expect(useHarness.getState().inspect).not.toHaveBeenCalled()
+    expect(useProjects.getState().working).toBeNull()
     expect(useDialog.getState().pending).toMatchObject({
       kind: 'error',
       details: 'removable workspaces are blocked',
     })
+  })
+
+  it('releases the project write slot when the environment check fails', async () => {
+    vi.mocked(useHarness.getState().inspect).mockRejectedValueOnce(new Error('probe failed'))
+
+    expect(await switchWorkspace('D:\\broken')).toBe(false)
+    expect(ipc.projectsAdd).toHaveBeenCalledWith('D:\\broken')
+    expect(useProjects.getState().roster).toEqual(roster)
+    expect(useProjects.getState().working).toBeNull()
+    expect(useHarness.getState().stop).not.toHaveBeenCalled()
+  })
+
+  it('turns away a second folder while the first admission is in flight', async () => {
+    let finish!: (value: typeof roster) => void
+    vi.mocked(ipc.projectsAdd).mockReturnValueOnce(
+      new Promise<typeof roster>((resolve) => {
+        finish = resolve
+      }),
+    )
+
+    const first = switchWorkspace('D:\\first')
+    expect(useProjects.getState().working).toBe('D:\\first')
+    expect(await switchWorkspace('D:\\second')).toBe(false)
+    expect(ipc.projectsAdd).toHaveBeenCalledTimes(1)
+
+    finish(roster)
+    expect(await first).toBe(true)
+    expect(useProjects.getState().working).toBeNull()
   })
 })

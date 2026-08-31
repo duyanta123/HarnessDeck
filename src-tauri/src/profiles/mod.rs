@@ -425,8 +425,9 @@ pub fn rename(from: &str, to: &str) -> Result<()> {
         )));
     }
 
+    let source = paths::profile_dir(&from);
     let target = free_dir(to)?;
-    std::fs::rename(paths::profile_dir(&from), &target).map_err(|cause| {
+    std::fs::rename(&source, &target).map_err(|cause| {
         Error::Profile(format!(
             "{from} could not be renamed: {cause}. Close anything using it — the harness included — and try again"
         ))
@@ -435,10 +436,116 @@ pub fn rename(from: &str, to: &str) -> Result<()> {
     // The manifest carries the name too. The harness only reads it when it makes
     // the profile, so a stale one changes nothing today and misleads whoever
     // opens the file next.
-    rename_in_manifest(&target, to)?;
-    switches::rename(&from, to)?;
-    selection::rename(&from, to)?;
+    let mut manifest_renamed = false;
+    let mut switches_renamed = false;
+    let mut selection_renamed = false;
+
+    if let Err(error) = rename_in_manifest(&target, to) {
+        return Err(rename_failure(
+            error,
+            rollback_profile_rename(
+                &source,
+                &target,
+                &from,
+                to,
+                manifest_renamed,
+                switches_renamed,
+                selection_renamed,
+            ),
+        ));
+    }
+    manifest_renamed = true;
+
+    if let Err(error) = switches::rename(&from, to) {
+        return Err(rename_failure(
+            error,
+            rollback_profile_rename(
+                &source,
+                &target,
+                &from,
+                to,
+                manifest_renamed,
+                switches_renamed,
+                selection_renamed,
+            ),
+        ));
+    }
+    switches_renamed = true;
+
+    if let Err(error) = selection::rename(&from, to) {
+        return Err(rename_failure(
+            error,
+            rollback_profile_rename(
+                &source,
+                &target,
+                &from,
+                to,
+                manifest_renamed,
+                switches_renamed,
+                selection_renamed,
+            ),
+        ));
+    }
+    selection_renamed = true;
+
+    if let Err(error) = crate::projects::profile_renamed(&from, to) {
+        return Err(rename_failure(
+            error,
+            rollback_profile_rename(
+                &source,
+                &target,
+                &from,
+                to,
+                manifest_renamed,
+                switches_renamed,
+                selection_renamed,
+            ),
+        ));
+    }
     Ok(())
+}
+
+fn rename_failure(error: Error, rollback: Vec<String>) -> Error {
+    if rollback.is_empty() {
+        return error;
+    }
+    Error::Profile(format!(
+        "{error}; the rename was rolled back with these follow-up errors: {}",
+        rollback.join("; ")
+    ))
+}
+
+fn rollback_profile_rename(
+    source: &Path,
+    target: &Path,
+    from: &str,
+    to: &str,
+    manifest_renamed: bool,
+    switches_renamed: bool,
+    selection_renamed: bool,
+) -> Vec<String> {
+    let mut failures = Vec::new();
+    if selection_renamed {
+        if let Err(error) = selection::rename(to, from) {
+            failures.push(format!("profile selection: {error}"));
+        }
+    }
+    if switches_renamed {
+        if let Err(error) = switches::rename(to, from) {
+            failures.push(format!("disabled-plugin records: {error}"));
+        }
+    }
+    if manifest_renamed {
+        if let Err(error) = rename_in_manifest(target, from) {
+            failures.push(format!("profile manifest: {error}"));
+        }
+    }
+    if target.exists() {
+        if let Err(error) = std::fs::rename(target, source) {
+            failures.push(format!("profile directory: {error}"));
+        }
+    }
+    failures
 }
 
 /// Take a profile away, with everything in it.
@@ -449,12 +556,17 @@ pub fn remove(name: &str) -> Result<()> {
             "{name} is one of the harness's own profiles, and it would write a new one the next time it starts"
         )));
     }
-
-    discard(&name)?;
-    // Never leave the window pointed at a profile that is not there. The
-    // fallback in `selected` would cover it, but a selection file naming a
-    // deleted profile is a lie the next reader has to work out for themselves.
-    selection::remove(&name)?;
+    // Keep the selection cleanup inside the same registry lock as the directory
+    // removal. Otherwise another window could create a new profile with this
+    // now-free name before `selection::remove` runs, and that cleanup would
+    // erase the new profile's selection state.
+    crate::projects::remove_profile_if_unused(&name, || {
+        discard(&name)?;
+        // Never leave the window pointed at a profile that is not there. The
+        // fallback in `selected` would cover it, but a selection file naming a
+        // deleted profile is a lie the next reader has to work out for themselves.
+        selection::remove(&name)
+    })?;
     Ok(())
 }
 

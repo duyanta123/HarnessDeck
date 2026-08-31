@@ -134,39 +134,45 @@ export async function switchProject(id: string): Promise<boolean> {
  * apply it. Used by the status-bar folder control and native drag-drop.
  */
 export async function addProjectWorkspace(path: string): Promise<boolean> {
-  if (useProjects.getState().working !== null) return false
+  const store = useProjects.getState()
+  if (store.working !== null) return false
 
+  useProjects.setState({ working: path, error: null })
   try {
-    const roster = await ipc.projectsAdd(path)
-    useProjects.setState({ roster, error: null })
-    void ipc.announce('projects')
-    void ipc.announce('profiles')
-  } catch (cause) {
-    useProjects.setState({ error: reportFailure(cause) })
-    return false
+    try {
+      const roster = await ipc.projectsAdd(path)
+      useProjects.setState({ roster, error: null })
+      void ipc.announce('projects')
+      void ipc.announce('profiles')
+    } catch (cause) {
+      useProjects.setState({ error: reportFailure(cause) })
+      return false
+    }
+
+    try {
+      await useHarness.getState().inspect()
+    } catch {
+      return false
+    }
+
+    const { phase } = useHarness.getState().status
+    if (phase === 'stopped' || phase === 'failed') return true
+
+    const taken = await ask({
+      title: t('project.restartTitle'),
+      body: t('project.restartBody'),
+      subject: path,
+      confirm: t('project.restartConfirm'),
+      tone: 'brand',
+    })
+    if (!taken) return true
+
+    await useHarness.getState().stop()
+    await useHarness.getState().start()
+    return true
+  } finally {
+    useProjects.setState({ working: null })
   }
-
-  try {
-    await useHarness.getState().inspect()
-  } catch {
-    return false
-  }
-
-  const { phase } = useHarness.getState().status
-  if (phase === 'stopped' || phase === 'failed') return true
-
-  const taken = await ask({
-    title: t('project.restartTitle'),
-    body: t('project.restartBody'),
-    subject: path,
-    confirm: t('project.restartConfirm'),
-    tone: 'brand',
-  })
-  if (!taken) return true
-
-  await useHarness.getState().stop()
-  await useHarness.getState().start()
-  return true
 }
 
 /**

@@ -68,24 +68,38 @@ fn replace(staged: &Path, target: &Path) -> Result<()> {
 #[cfg(windows)]
 fn replace(staged: &Path, target: &Path) -> Result<()> {
     use std::os::windows::ffi::OsStrExt as _;
+    use std::thread;
+    use std::time::Duration;
     use windows_sys::Win32::Storage::FileSystem::{
         MoveFileExW, MOVEFILE_REPLACE_EXISTING, MOVEFILE_WRITE_THROUGH,
     };
 
     let staged: Vec<u16> = staged.as_os_str().encode_wide().chain(Some(0)).collect();
     let target: Vec<u16> = target.as_os_str().encode_wide().chain(Some(0)).collect();
-    let moved = unsafe {
-        MoveFileExW(
-            staged.as_ptr(),
-            target.as_ptr(),
-            MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH,
-        )
-    };
-    if moved == 0 {
-        Err(Error::last_os_error())
-    } else {
-        Ok(())
+    // Two windows may finish staging at the same time. Windows can briefly
+    // report the destination as access-denied while the other replacement is
+    // closing its handle; retry those transient sharing errors instead of
+    // surfacing a spurious failed save to the caller.
+    for attempt in 0..8 {
+        let moved = unsafe {
+            MoveFileExW(
+                staged.as_ptr(),
+                target.as_ptr(),
+                MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH,
+            )
+        };
+        if moved != 0 {
+            return Ok(());
+        }
+        let error = Error::last_os_error();
+        let transient = matches!(error.raw_os_error(), Some(5) | Some(32) | Some(33));
+        if !transient || attempt == 7 {
+            return Err(error);
+        }
+        thread::sleep(Duration::from_millis(2 << attempt));
     }
+
+    unreachable!("the atomic replacement loop always returns")
 }
 
 #[cfg(test)]

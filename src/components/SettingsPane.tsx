@@ -28,7 +28,7 @@ import { isMac } from '@/lib/platform'
 import { useStartup } from '@/state/startup'
 import { ask } from '@/state/dialog'
 import { useProfiles } from '@/state/profiles'
-import { switchProject, useProjects } from '@/state/projects'
+import { addProjectWorkspace, switchProject, useProjects } from '@/state/projects'
 import { usePresentation } from '@/state/presentation'
 
 /**
@@ -273,7 +273,6 @@ function ProjectsSection() {
   const working = useProjects((state) => state.working)
   const error = useProjects((state) => state.error)
   const refresh = useProjects((state) => state.refresh)
-  const add = useProjects((state) => state.add)
   const remove = useProjects((state) => state.remove)
   const rename = useProjects((state) => state.rename)
   const bindProfile = useProjects((state) => state.bindProfile)
@@ -294,7 +293,7 @@ function ProjectsSection() {
       multiple: false,
     })
     if (typeof chosen !== 'string') return
-    await add(chosen)
+    await addProjectWorkspace(chosen)
   }
 
   const beginRename = (id: string, current: string) => {

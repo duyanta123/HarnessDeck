@@ -189,12 +189,34 @@ pub fn copy(from: &str, to: &str) -> Result<()> {
 /// Follow a profile that was renamed. The record is keyed by name, so without
 /// this a rename would silently switch everything back on.
 pub fn rename(from: &str, to: &str) -> Result<()> {
-    let store = store();
-    let off = off_in(&store, from);
-    if !off.is_empty() {
-        remember_in(&store, to, &off)?;
+    rename_in(&store(), from, to)
+}
+
+fn rename_in(store: &Path, from: &str, to: &str) -> Result<()> {
+    let mut document = document(store);
+    let Some(disabled) = document
+        .get("disabled")
+        .and_then(Value::as_object)
+        .cloned()
+    else {
+        return Ok(());
+    };
+
+    let mut disabled = disabled;
+    let off = disabled.remove(from);
+    if let Some(off) = off.filter(|names| {
+        names
+            .as_array()
+            .is_some_and(|names| !names.is_empty())
+    }) {
+        disabled.insert(to.to_string(), off);
     }
-    forget_in(&store, from)
+    document.insert("disabled".to_string(), Value::Object(disabled));
+
+    // Keep the rename a single atomic write. The previous implementation wrote
+    // the destination and source records separately, so a disk error between
+    // those writes could leave both names (or neither) behind.
+    write(store, &Value::Object(document))
 }
 
 /// Drop a profile's record once the profile itself is gone.
@@ -478,6 +500,34 @@ mod tests {
 
         assert!(off_in(&store, "web").is_empty());
         assert_eq!(off_in(&store, "api"), off("@vendor/dsh-charts"));
+    }
+
+    #[test]
+    fn renaming_a_profile_moves_its_disabled_list_in_one_commit() {
+        let store = record("rename");
+        std::fs::create_dir_all(store.parent().expect("record parent"))
+            .expect("record directory");
+        let mut document = Map::new();
+        document.insert(
+            "disabled".into(),
+            serde_json::json!({
+                "web": ["@vendor/dsh-notes"],
+                "other": ["@vendor/dsh-charts"]
+            }),
+        );
+        write(&store, &Value::Object(document)).expect("recorded");
+
+        rename_in(&store, "web", "renamed").expect("renamed");
+
+        assert_eq!(
+            off_in(&store, "renamed"),
+            BTreeSet::from(["@vendor/dsh-notes".into()])
+        );
+        assert!(off_in(&store, "web").is_empty());
+        assert_eq!(
+            off_in(&store, "other"),
+            BTreeSet::from(["@vendor/dsh-charts".into()])
+        );
     }
 
     #[test]

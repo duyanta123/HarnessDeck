@@ -7,6 +7,7 @@
 pub mod commands;
 
 use std::path::{Path, PathBuf};
+use std::sync::{Mutex, OnceLock};
 
 use serde::{Deserialize, Serialize};
 
@@ -14,6 +15,19 @@ use crate::error::{Error, Result};
 use crate::paths;
 
 const SELECTION_FILE: &str = "projects.json";
+
+/// Serialize every read-modify-write against the process-wide project registry.
+///
+/// The application deliberately supports multiple windows, and each window can
+/// invoke a Tauri command independently. Atomic replacement protects the JSON
+/// file from truncation, but it cannot merge two registries that were both read
+/// before either one was saved. Keeping this lock here makes the backend the
+/// authority rather than relying on one frontend store per window.
+static REGISTRY_LOCK: OnceLock<Mutex<()>> = OnceLock::new();
+
+fn registry_lock() -> &'static Mutex<()> {
+    REGISTRY_LOCK.get_or_init(|| Mutex::new(()))
+}
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -115,6 +129,7 @@ impl Store {
     }
 
     fn choose(&self, id: &str) -> Result<Roster> {
+        let _lock = registry_lock().lock().expect("project registry poisoned");
         let mut registry = self.load();
         let profile = {
             let Some(project) = registry.projects.iter_mut().find(|project| project.id == id) else {
@@ -155,12 +170,14 @@ fn active_id(registry: &Registry) -> String {
 
 /// Every project on the machine.
 pub fn roster() -> Roster {
+    let _lock = registry_lock().lock().expect("project registry poisoned");
     let registry = Store::managed().load();
     roster_of(registry)
 }
 
 /// The project the next Harness start serves, if a registry exists.
 pub fn active() -> Option<Project> {
+    let _lock = registry_lock().lock().expect("project registry poisoned");
     let registry = Store::managed().load();
     let selected = active_id(&registry);
     registry
@@ -169,6 +186,12 @@ pub fn active() -> Option<Project> {
         .find(|project| project.id == selected)
         .cloned()
         .or_else(|| registry.projects.first().cloned())
+}
+
+/// Whether a project is the context the next Harness start (and the current
+/// supervisor, if running) is serving.
+pub fn is_active(id: &str) -> bool {
+    active().is_some_and(|project| project.id == id)
 }
 
 /// The workspace selected by the active project, if one exists.
@@ -199,6 +222,7 @@ pub fn inspect_path(path: &Path) -> Result<PathBuf> {
 
 pub fn add(name: Option<String>, path: PathBuf, profile: Option<String>) -> Result<Roster> {
     let path = inspect_path(&path)?;
+    let _lock = registry_lock().lock().expect("project registry poisoned");
     let mut registry = Store::managed().load();
 
     // A folder already admitted as a project is switched to, not duplicated.
@@ -211,7 +235,7 @@ pub fn add(name: Option<String>, path: PathBuf, profile: Option<String>) -> Resu
     }
 
     let name = clean_name(name, &path);
-    let profile = resolve_profile(&name, profile)?;
+    let profile = resolve_profile(&name, profile, &registry)?;
 
     let id = unique_id(&registry, &name);
     registry.projects.push(Project {
@@ -233,21 +257,41 @@ pub fn add(name: Option<String>, path: PathBuf, profile: Option<String>) -> Resu
 }
 
 pub fn remove(id: &str) -> Result<Roster> {
+    let _lock = registry_lock().lock().expect("project registry poisoned");
     let mut registry = Store::managed().load();
     if registry.projects.len() <= 1 {
         return Err(Error::Project(
             "the last project cannot be removed; add another one first".into(),
         ));
     }
+    let was_active = active_id(&registry) == id;
     let before = registry.projects.len();
     registry.projects.retain(|project| project.id != id);
     if registry.projects.len() == before {
         return Err(Error::Project(format!("there is no project with id {id}")));
     }
+    let next_profile = if was_active {
+        registry
+            .projects
+            .first()
+            .map(|project| project.profile.clone())
+    } else {
+        None
+    };
     if registry.selected.as_deref() == Some(id) {
         registry.selected = registry.projects.first().map(|project| project.id.clone());
     }
+    if let Some(profile) = &next_profile {
+        if !profile_exists(profile) {
+            return Err(Error::Project(format!(
+                "the replacement project is bound to profile {profile}, which no longer exists"
+            )));
+        }
+    }
     Store::managed().save(&registry)?;
+    if let Some(profile) = next_profile {
+        crate::profiles::select(&profile)?;
+    }
     Ok(roster_of(registry))
 }
 
@@ -258,6 +302,7 @@ pub fn rename(id: &str, name: String) -> Result<Roster> {
             "project names must be between 1 and 80 characters".into(),
         ));
     }
+    let _lock = registry_lock().lock().expect("project registry poisoned");
     let mut registry = Store::managed().load();
     let Some(project) = registry.projects.iter_mut().find(|project| project.id == id) else {
         return Err(Error::Project(format!("there is no project with id {id}")));
@@ -269,6 +314,7 @@ pub fn rename(id: &str, name: String) -> Result<Roster> {
 
 pub fn bind_profile(id: &str, profile: String) -> Result<Roster> {
     let profile = profile.trim().to_string();
+    let _lock = registry_lock().lock().expect("project registry poisoned");
     if !profile_exists(&profile) {
         return Err(Error::Project(format!(
             "there is no profile called {profile}"
@@ -292,6 +338,7 @@ pub fn bind_profile(id: &str, profile: String) -> Result<Roster> {
 /// switcher. Keeps the title-bar chips and `launch_plan` from disagreeing.
 pub fn bind_active_profile(name: &str) -> Result<Roster> {
     let profile = name.trim().to_string();
+    let _lock = registry_lock().lock().expect("project registry poisoned");
     if !profile_exists(&profile) {
         return Err(Error::Project(format!(
             "there is no profile called {profile}"
@@ -329,7 +376,46 @@ fn profile_exists(name: &str) -> bool {
         .any(|profile| profile.name == name)
 }
 
-fn resolve_profile(project_name: &str, requested: Option<String>) -> Result<String> {
+/// Run the destructive half of Profile removal while no project can bind the
+/// same name between the reference check and the directory deletion.
+pub fn remove_profile_if_unused<T>(name: &str, remove: impl FnOnce() -> Result<T>) -> Result<T> {
+    let _lock = registry_lock().lock().expect("project registry poisoned");
+    if Store::managed()
+        .load()
+        .projects
+        .iter()
+        .any(|project| project.profile == name)
+    {
+        return Err(Error::Profile(format!(
+            "{name} is still bound to a project; rebind or remove that project before deleting the profile"
+        )));
+    }
+    remove()
+}
+
+/// Update every project binding after a Profile directory is renamed.
+pub fn profile_renamed(from: &str, to: &str) -> Result<()> {
+    let _lock = registry_lock().lock().expect("project registry poisoned");
+    let store = Store::managed();
+    let mut registry = store.load();
+    let mut changed = false;
+    for project in &mut registry.projects {
+        if project.profile == from {
+            project.profile = to.to_string();
+            changed = true;
+        }
+    }
+    if changed {
+        store.save(&registry)?;
+    }
+    Ok(())
+}
+
+fn resolve_profile(
+    project_name: &str,
+    requested: Option<String>,
+    registry: &Registry,
+) -> Result<String> {
     if let Some(requested) = requested {
         let requested = requested.trim().to_string();
         if !requested.is_empty() {
@@ -342,16 +428,61 @@ fn resolve_profile(project_name: &str, requested: Option<String>) -> Result<Stri
         }
     }
 
-    let candidate = auto_profile_name(project_name);
-    if profile_exists(&candidate) {
-        return Ok(candidate);
+    let base = auto_profile_name(project_name);
+    if !crate::profiles::is_new_name(&base) {
+        return Err(Error::Project(format!(
+            "automatic profile name {base} is not valid"
+        )));
     }
-    if crate::profiles::is_new_name(&candidate) {
-        if crate::profiles::create(&candidate).is_ok() && profile_exists(&candidate) {
-            return Ok(candidate);
+
+    // A Profile is the isolation boundary for credentials and plugins. A second
+    // project with the same display name must receive a fresh name rather than
+    // silently inheriting the first project's context.
+    let mut occupied = crate::profiles::roster()
+        .profiles
+        .into_iter()
+        .map(|profile| profile.name)
+        .collect::<std::collections::HashSet<_>>();
+    // Keep names referenced by a stale registry occupied too. Reusing one would
+    // silently make an older project start sharing the newly created Profile.
+    occupied.extend(
+        registry
+            .projects
+            .iter()
+            .map(|project| project.profile.clone()),
+    );
+    let candidate = next_profile_name(&base, &occupied);
+    crate::profiles::create(&candidate).map_err(|failure| {
+        Error::Project(format!(
+            "automatic profile {candidate} could not be created: {failure}"
+        ))
+    })?;
+    if !profile_exists(&candidate) {
+        return Err(Error::Project(format!(
+            "automatic profile {candidate} was not created"
+        )));
+    }
+    Ok(candidate)
+}
+
+fn next_profile_name(base: &str, occupied: &std::collections::HashSet<String>) -> String {
+    if !occupied.contains(base) {
+        return base.to_string();
+    }
+    for index in 2..16_384 {
+        let candidate = suffixed_profile_name(base, &index.to_string());
+        if !occupied.contains(&candidate) {
+            return candidate;
         }
     }
-    Ok(crate::profiles::selected())
+    suffixed_profile_name(base, &now_millis().to_string())
+}
+
+fn suffixed_profile_name(base: &str, suffix: &str) -> String {
+    let suffix = format!("-{suffix}");
+    let keep = 64usize.saturating_sub(suffix.len());
+    let stem = &base[..base.len().min(keep)];
+    format!("{stem}{suffix}")
 }
 
 fn auto_profile_name(project_name: &str) -> String {
@@ -366,6 +497,10 @@ fn auto_profile_name(project_name: &str) -> String {
             }
         }
     }
+    let mut slug = slug.trim_matches('-').to_string();
+    // Profile names are at most 64 bytes. Everything accumulated above is ASCII,
+    // so truncating by byte cannot split a character.
+    slug.truncate(59);
     let slug = slug.trim_matches('-');
     if slug.is_empty() {
         "proj-default".to_string()
@@ -468,5 +603,28 @@ mod tests {
             }],
         };
         assert_eq!(active_id(&registry), "a");
+    }
+
+    #[test]
+    fn duplicate_project_names_get_distinct_profile_names() {
+        let occupied = ["proj-app".to_string(), "proj-app-2".to_string()]
+            .into_iter()
+            .collect();
+        assert_eq!(next_profile_name("proj-app", &occupied), "proj-app-3");
+    }
+
+    #[test]
+    fn a_stale_profile_binding_still_reserves_its_name() {
+        let occupied = ["proj-app".to_string()].into_iter().collect();
+        assert_eq!(next_profile_name("proj-app", &occupied), "proj-app-2");
+    }
+
+    #[test]
+    fn profile_names_are_kept_within_the_profile_limit() {
+        let base = "proj-".to_string() + &"a".repeat(59);
+        let occupied = [base.clone()].into_iter().collect();
+        let candidate = next_profile_name(&base, &occupied);
+        assert!(candidate.len() <= 64);
+        assert_eq!(candidate, format!("{}-2", &base[..62]));
     }
 }

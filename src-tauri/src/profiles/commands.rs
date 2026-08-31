@@ -110,11 +110,22 @@ fn checked_generation(current: &str, offered: &str) -> Result<()> {
 /// call to make in the window, not a side effect of a menu click.
 #[tauri::command]
 pub fn profile_select(name: String, state: State<'_, AppState>) -> Result<Roster> {
-    super::select(&name)?;
     // The active project owns the profile for the next launch. The standalone
     // profile chip also changes working context, so record that on the project
-    // rather than letting the next start disagree with the chip.
+    // before changing the selection file. If the selection write fails, restore
+    // the project binding so the two sources cannot disagree.
+    let previous = crate::projects::active_profile();
     crate::projects::bind_active_profile(&name)?;
+    if let Err(error) = super::select(&name) {
+        if let Some(previous) = previous {
+            if let Err(rollback) = crate::projects::bind_active_profile(&previous) {
+                return Err(Error::Profile(format!(
+                    "{error}; profile binding rollback also failed: {rollback}"
+                )));
+            }
+        }
+        return Err(error);
+    }
     state.supervisor.note(
         Stream::Stdout,
         format!("profile {name} selected; restart the harness to run it"),
@@ -153,14 +164,25 @@ pub async fn profile_duplicate(
 }
 
 #[tauri::command]
-pub fn profile_rename(from: String, to: String, state: State<'_, AppState>) -> Result<Roster> {
+pub fn profile_rename(
+    from: String,
+    to: String,
+    state: State<'_, AppState>,
+    jobs: State<'_, Arc<PluginJobs>>,
+) -> Result<Roster> {
+    let _busy = jobs.claim()?;
     idle(&from, &state)?;
     super::rename(&from, &to)?;
     Ok(super::roster())
 }
 
 #[tauri::command]
-pub fn profile_remove(name: String, state: State<'_, AppState>) -> Result<Roster> {
+pub fn profile_remove(
+    name: String,
+    state: State<'_, AppState>,
+    jobs: State<'_, Arc<PluginJobs>>,
+) -> Result<Roster> {
+    let _busy = jobs.claim()?;
     idle(&name, &state)?;
     super::remove(&name)?;
     Ok(super::roster())
@@ -257,7 +279,8 @@ fn idle(name: &str, state: &State<'_, AppState>) -> Result<()> {
         state.supervisor.status(),
         Status::Stopped | Status::Failed { .. }
     );
-    if running && super::selected() == name {
+    let active_profile = crate::projects::active_profile();
+    if running && active_profile.as_deref() == Some(name) {
         return Err(Error::Profile(format!(
             "the harness is running {name}; stop it first"
         )));
