@@ -49,7 +49,7 @@
       }
     },
     "updater": {
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEVCRDlBREQ4RTA3QTY4N0EKUldSNmFIcmcySzNaNnhad3M2bnBqWFVVYjNMZThvTUdhQU1Odnl0dTdNNFNobWs2NXNMdnViZ3oK",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEIyQ0M2REYzM0NGMTdDMkIKUldRcmZQRTg4MjNNc2wrb3k0WEhsaDFyalFvajBjaU1LUGtlMjc1aDQzdmdNOXpoMEJZaG04alEK",
       "endpoints": [
         "https://github.com/duyanta123/HarnessDeck/releases/latest/download/latest.json"
       ],

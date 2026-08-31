@@ -1,7 +1,7 @@
-export const DSH_STUDIO_PROTOCOL: 3
-export const DSH_STUDIO_HOST_PROTOCOL: 1
+export const HARNESSDECK_PROTOCOL: 3
+export const HARNESSDECK_HOST_PROTOCOL: 1
 
-export interface DshStudioHostProfile {
+export interface HarnessDeckHostProfile {
   readonly name: string
   readonly dir: string
   readonly initialized: boolean
@@ -10,7 +10,7 @@ export interface DshStudioHostProfile {
   readonly problem: 'unreadable-manifest' | null
 }
 
-export interface DshStudioHost {
+export interface HarnessDeckHost {
   readonly protocol: 1
   readonly studio: { readonly name: 'HarnessDeck'; readonly version: string }
   readonly harness: { readonly version: string }
@@ -24,35 +24,35 @@ export interface DshStudioHost {
   }
   readonly profiles: {
     readonly current: { readonly name: string; readonly dir: string }
-    list(): readonly DshStudioHostProfile[]
+    list(): readonly HarnessDeckHostProfile[]
   }
 }
 
-export interface DshStudioHostContext {
-  readonly dshStudioHost?: DshStudioHost | { readonly protocol?: unknown }
-  get?(name: 'dshStudioHost'): DshStudioHost | { readonly protocol?: unknown } | undefined
+export interface HarnessDeckHostContext {
+  readonly harnessDeckHost?: HarnessDeckHost | { readonly protocol?: unknown }
+  get?(name: 'harnessDeckHost'): HarnessDeckHost | { readonly protocol?: unknown } | undefined
 }
 
-export interface DshStudioLink {
+export interface HarnessDeckLink {
   readonly url: string
   readonly route: string
   readonly query: Readonly<Record<string, string>>
 }
 
-export type DshStudioCapability =
+export type HarnessDeckCapability =
   'notify' | 'pick' | 'badge' | 'link' | 'profiles' | 'plugins' | 'workspace'
 
-export interface DshStudioOffer {
+export interface HarnessDeckOffer {
   readonly protocol: 3
   readonly app: string
   readonly version: string
   readonly platform: string
-  readonly scheme: 'dsh'
-  readonly capabilities: readonly DshStudioCapability[]
-  readonly link: DshStudioLink | null
+  readonly scheme: 'harnessdeck'
+  readonly capabilities: readonly HarnessDeckCapability[]
+  readonly link: HarnessDeckLink | null
 }
 
-export interface DshStudioProfile {
+export interface HarnessDeckProfile {
   readonly name: string
   readonly dir: string
   readonly initialized: boolean
@@ -62,13 +62,13 @@ export interface DshStudioProfile {
   readonly disabled: number
 }
 
-export interface DshStudioProfileRoster {
-  readonly profiles: readonly DshStudioProfile[]
+export interface HarnessDeckProfileRoster {
+  readonly profiles: readonly HarnessDeckProfile[]
   readonly selected: string
   readonly root: string
 }
 
-export interface DshStudioInstalledPlugin {
+export interface HarnessDeckInstalledPlugin {
   readonly name: string
   readonly spec: string
   readonly active: boolean
@@ -77,20 +77,20 @@ export interface DshStudioInstalledPlugin {
   readonly marketReceipt: string | null
 }
 
-export interface DshStudioPluginState {
+export interface HarnessDeckPluginState {
   readonly profile: string
   readonly profileDir: string
   readonly initialized: boolean
-  readonly plugins: readonly DshStudioInstalledPlugin[]
+  readonly plugins: readonly HarnessDeckInstalledPlugin[]
   readonly packageManager: boolean
 }
 
-export interface DshStudioWorkspaceAdmission {
+export interface HarnessDeckWorkspaceAdmission {
   readonly allowed: boolean
   readonly reason: string
 }
 
-export interface DshStudioPickOptions {
+export interface HarnessDeckPickOptions {
   readonly mode?: 'open' | 'save' | 'directory'
   readonly title?: string
   readonly defaultPath?: string
@@ -100,16 +100,16 @@ export interface DshStudioPickOptions {
   }[]
 }
 
-export interface DshStudio {
+export interface HarnessDeck {
   readonly protocol: 3
-  hello(): Promise<DshStudioOffer>
+  hello(): Promise<HarnessDeckOffer>
   notify(options: { readonly title: string; readonly body?: string }): Promise<void>
-  pick(options?: DshStudioPickOptions): Promise<{ readonly path: string | null }>
+  pick(options?: HarnessDeckPickOptions): Promise<{ readonly path: string | null }>
   badge(count: number): Promise<void>
   readonly profiles: {
-    list(): Promise<DshStudioProfileRoster>
+    list(): Promise<HarnessDeckProfileRoster>
     select(name: string): Promise<{
-      readonly roster: DshStudioProfileRoster
+      readonly roster: HarnessDeckProfileRoster
       readonly restartRequired: true
     }>
   }
@@ -118,35 +118,35 @@ export interface DshStudio {
       readonly name: string
       readonly version: string
       readonly displayName?: string
-    }): Promise<DshStudioPluginState>
-    remove(name: string): Promise<DshStudioPluginState>
+    }): Promise<HarnessDeckPluginState>
+    remove(name: string): Promise<HarnessDeckPluginState>
   }
   readonly workspace: {
-    validate(path: string): Promise<DshStudioWorkspaceAdmission>
+    validate(path: string): Promise<HarnessDeckWorkspaceAdmission>
     onDrop(handler: (path: string) => void): () => void
   }
-  onLink(handler: (link: DshStudioLink) => void): () => void
+  onLink(handler: (link: HarnessDeckLink) => void): () => void
 }
 
-export interface DshStudioScope {
-  readonly dshStudio?: DshStudio | { readonly protocol?: unknown }
+export interface HarnessDeckScope {
+  readonly harnessDeck?: HarnessDeck | { readonly protocol?: unknown }
 }
 
-export function getDshStudio(scope?: unknown): DshStudio | undefined
-export function requireDshStudio(scope?: unknown): DshStudio
-export function hasDshStudioCapability(
+export function getHarnessDeck(scope?: unknown): HarnessDeck | undefined
+export function requireHarnessDeck(scope?: unknown): HarnessDeck
+export function hasHarnessDeckCapability(
   offer: unknown,
   capability: string,
-): capability is DshStudioCapability
-export function onDshStudioWorkspaceDrop(
+): capability is HarnessDeckCapability
+export function onHarnessDeckWorkspaceDrop(
   handler: (path: string) => void,
   scope?: unknown,
 ): () => void
-export function getDshStudioHost(ctx?: unknown): DshStudioHost | undefined
-export function requireDshStudioHost(ctx?: unknown): DshStudioHost
+export function getHarnessDeckHost(ctx?: unknown): HarnessDeckHost | undefined
+export function requireHarnessDeckHost(ctx?: unknown): HarnessDeckHost
 
 declare global {
   interface Window {
-    readonly dshStudio?: DshStudio
+    readonly harnessDeck?: HarnessDeck
   }
 }

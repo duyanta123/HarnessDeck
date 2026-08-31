@@ -28,7 +28,7 @@ export const STEPS = 3
 const VERSION = '1'
 
 /** Namespaced, because a webview's storage is shared with whatever it hosts. */
-const KEY = 'dsh-studio.onboarding'
+const KEY = 'harnessdeck.onboarding'
 
 /**
  * `unknown` until the machine has been looked at.

@@ -18,7 +18,7 @@ import { create } from 'zustand'
 import type { Rate, Rates } from '@/lib/usage'
 
 /** Versioned, so a later shape can be recognised rather than half-read. */
-const KEY = 'dsh-studio:usage:rates:v1'
+const KEY = 'harnessdeck:usage:rates:v1'
 
 export type Currency = 'CNY' | 'USD'
 

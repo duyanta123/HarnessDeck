@@ -2,7 +2,7 @@
 
 [简体中文](plugin-interoperability.zh-CN.md)
 
-Status: **supported for HarnessDeck 0.7.x**. The wire protocol is version 3, the
+Status: **supported for HarnessDeck 0.1.x**. The wire protocol is version 3, the
 catalog schema is 1.0.0, and the SDK package follows the application version.
 Normative words such as MUST, MUST NOT and SHOULD are used intentionally.
 
@@ -13,7 +13,7 @@ This contract keeps three different extension surfaces separate:
    generation identity and bounded Profile discovery. It does not expose raw
    native, command-runner, package-manager, or Profile-mutation authority.
 2. A **Harness Web Client plugin** runs in the supervised loopback page. It MAY
-   feature-detect Protocol 3 through `@moresyl/dsh-studio-sdk`.
+   feature-detect Protocol 3 through `@duyanta123/harnessdeck-sdk`.
 3. A **Studio-managed integration** is shipped and qualified with the pinned
    runtime. It is not a third-party privilege boundary and MUST fail closed when
    the expected upstream seam changes.
@@ -44,13 +44,13 @@ installation authority.
 ## Capabilities and events
 
 Plugins MUST call `hello()` and inspect `capabilities` before depending on an
-optional desktop feature. Presence of `window.dshStudio` alone identifies a
+optional desktop feature. Presence of `window.harnessDeck` alone identifies a
 compatible host only when `protocol === 3`; the SDK enforces that check.
 
 Protocol 3 has two pushed event families:
 
-- `onLink(handler)` delivers one parsed `dsh://` link. A link waiting at startup
-  is consumed by the first `hello()` response.
+- `onLink(handler)` delivers one parsed `harnessdeck://` link. A link waiting at
+  startup is consumed by the first `hello()` response.
 - `workspace.onDrop(handler)` delivers one admitted native directory path to the
   qualified top-level Harness client. It is not a filesystem read permission.
 
@@ -60,8 +60,8 @@ restart.
 
 ### Read-only Host Protocol 1
 
-Host plugins MAY feature-detect `dshStudioHost` with
-`getDshStudioHost(ctx)`. The service is immutable and scoped to one Cordis
+Host plugins MAY feature-detect `harnessDeckHost` with
+`getHarnessDeckHost(ctx)`. The service is immutable and scoped to one Cordis
 generation. Its `profiles.current` identity cannot change in place, while
 `profiles.list()` re-reads at most 128 safe, non-symlink Profile directories and
 at most 256 KiB from each manifest. A malformed manifest is represented by the
@@ -76,7 +76,7 @@ infer authority from `DSH_DESKTOP` or other process environment values.
 
 ## Presentation, invocation and transport
 
-The public presentation surface is `window.dshStudio`; there is no raw preload,
+The public presentation surface is `window.harnessDeck`; there is no raw preload,
 Tauri command or shell bridge. A plugin UI invokes methods using the frozen SDK
 contract. Studio transports requests with `postMessage`, but message shapes are
 an implementation detail and MUST NOT be constructed directly.
@@ -94,10 +94,10 @@ Host routes, RPC, services and slots for agent, session, model, tool and
 workspace behavior. Desktop support SHOULD be an optional adapter:
 
 ```js
-import { getDshStudio } from '@moresyl/dsh-studio-sdk'
+import { getHarnessDeck } from '@duyanta123/harnessdeck-sdk'
 
 export function mountDesktopAdapter(scope = window) {
-  const desktop = getDshStudio(scope)
+  const desktop = getHarnessDeck(scope)
   if (!desktop) return () => {}
   return desktop.onLink((link) => {
     scope.dispatchEvent(new CustomEvent('plugin:desktop-link', { detail: link }))

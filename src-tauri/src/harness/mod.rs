@@ -120,8 +120,8 @@ pub fn launch_plan() -> Result<LaunchPlan> {
             .then(|| {
                 paths::harness_dir()
                     .join("node_modules")
-                    .join("@moresyl")
-                    .join("dsh-studio-integration")
+                    .join("@duyanta123")
+                    .join("harnessdeck-integration")
                     .join("cordis.patch.yml")
             })
             .into_iter()

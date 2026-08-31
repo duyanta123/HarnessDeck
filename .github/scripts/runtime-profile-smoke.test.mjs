@@ -30,7 +30,7 @@ test('smoke profile mirrors the product bootstrap and materializes integration',
   const root = await mkdtemp(join(tmpdir(), 'dsh-profile-smoke-test-'))
   try {
     const runtime = join(root, 'runtime')
-    const integration = join(runtime, 'node_modules', '@moresyl', 'dsh-studio-integration')
+    const integration = join(runtime, 'node_modules', '@duyanta123', 'harnessdeck-integration')
     await mkdir(join(integration, 'lib'), { recursive: true })
     await Promise.all(
       ['package.json', 'cordis.patch.yml', 'lib/index.js', 'lib/client.js'].map(
@@ -54,8 +54,8 @@ test('smoke profile mirrors the product bootstrap and materializes integration',
           home,
           'profiles',
           'node_modules',
-          '@moresyl',
-          'dsh-studio-integration',
+          '@duyanta123',
+          'harnessdeck-integration',
           'lib',
           'client.js',
         ),
@@ -68,14 +68,14 @@ test('smoke profile mirrors the product bootstrap and materializes integration',
         home,
         'profiles',
         'node_modules',
-        '@moresyl',
-        'dsh-studio-host-contract-probe',
+        '@duyanta123',
+        'harnessdeck-host-contract-probe',
         'index.js',
       ),
       'utf8',
     )
-    assert.match(probe, /inject = \['dshStudioHost'\]/)
-    assert.match(await readFile(made.probePatch, 'utf8'), /dsh-studio-host-contract-probe/)
+    assert.match(probe, /inject = \['harnessDeckHost'\]/)
+    assert.match(await readFile(made.probePatch, 'utf8'), /harnessdeck-host-contract-probe/)
   } finally {
     await rm(root, { recursive: true, force: true })
   }

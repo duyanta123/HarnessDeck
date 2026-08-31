@@ -194,7 +194,7 @@ jobs:
                       "-e", SIGNING_ENDPOINT,
                       "-a", SIGNING_ACCOUNT,
                       "-c", SIGNING_PROFILE,
-                      "-d", "DSH Studio",
+                      "-d", "HarnessDeck",
                       "%1",
                     ],
                   },
@@ -251,7 +251,7 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ''
         with:
           tagName: v__VERSION__
-          releaseName: DSH Studio v__VERSION__
+          releaseName: HarnessDeck v__VERSION__
           releaseBody: ${{ steps.release_notes.outputs.body }}
           releaseDraft: false
           prerelease: false
@@ -289,7 +289,7 @@ jobs:
         if: matrix.target != 'universal-apple-darwin'
         shell: bash
         env:
-          DSH_STUDIO_EDITION: full
+          HARNESSDECK_EDITION: full
           CARGO_TARGET_DIR: ${{ github.workspace }}/src-tauri/target-full
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ''

@@ -1,12 +1,12 @@
-import { getDshStudio, hasDshStudioCapability } from '@moresyl/dsh-studio-sdk'
+import { getHarnessDeck, hasHarnessDeckCapability } from '@duyanta123/harnessdeck-sdk'
 
 /** Mount an optional Desktop adapter without changing ordinary Harness use. */
 export async function mountDesktopExample(scope = window) {
-  const desktop = getDshStudio(scope)
+  const desktop = getHarnessDeck(scope)
   if (!desktop) return () => {}
 
   const offer = await desktop.hello()
-  if (!hasDshStudioCapability(offer, 'workspace')) return () => {}
+  if (!hasHarnessDeckCapability(offer, 'workspace')) return () => {}
 
   return desktop.workspace.onDrop((path) => {
     // Production plugins normally pass this path to their upstream Harness

@@ -1,40 +1,40 @@
 /** Protocol implemented by this SDK release. */
-export const DSH_STUDIO_PROTOCOL = 3
+export const HARNESSDECK_PROTOCOL = 3
 /** Read-only Cordis Host service protocol implemented by this SDK release. */
-export const DSH_STUDIO_HOST_PROTOCOL = 1
+export const HARNESSDECK_HOST_PROTOCOL = 1
 
 /**
  * Return the current Studio contract, or undefined in a browser/unsupported
  * Studio. The optional scope makes feature detection testable and iframe-safe.
  */
-export function getDshStudio(scope = globalThis) {
+export function getHarnessDeck(scope = globalThis) {
   if ((typeof scope !== 'object' && typeof scope !== 'function') || scope === null) {
     return undefined
   }
-  const desktop = scope.dshStudio
+  const desktop = scope.harnessDeck
   if (typeof desktop !== 'object' || desktop === null) return undefined
-  return desktop.protocol === DSH_STUDIO_PROTOCOL ? desktop : undefined
+  return desktop.protocol === HARNESSDECK_PROTOCOL ? desktop : undefined
 }
 
 /** Return the current contract or fail with one stable, user-actionable error. */
-export function requireDshStudio(scope = globalThis) {
-  const desktop = getDshStudio(scope)
+export function requireHarnessDeck(scope = globalThis) {
+  const desktop = getHarnessDeck(scope)
   if (desktop) return desktop
 
   const seen =
     (typeof scope === 'object' || typeof scope === 'function') && scope !== null
-      ? scope.dshStudio?.protocol
+      ? scope.harnessDeck?.protocol
       : undefined
   if (seen !== undefined) {
     throw new Error(
-      `HarnessDeck Protocol ${String(seen)} is not supported; this plugin requires Protocol ${DSH_STUDIO_PROTOCOL}`,
+      `HarnessDeck Protocol ${String(seen)} is not supported; this plugin requires Protocol ${HARNESSDECK_PROTOCOL}`,
     )
   }
   throw new Error('HarnessDeck Protocol 3 is not available in this page')
 }
 
 /** Check a capability returned by hello() without trusting a malformed value. */
-export function hasDshStudioCapability(offer, capability) {
+export function hasHarnessDeckCapability(offer, capability) {
   return (
     typeof capability === 'string' &&
     capability.length > 0 &&
@@ -48,35 +48,35 @@ export function hasDshStudioCapability(offer, capability) {
  * handler is checked before touching the desktop so a programming error cannot
  * leave a partially registered listener.
  */
-export function onDshStudioWorkspaceDrop(handler, scope = globalThis) {
+export function onHarnessDeckWorkspaceDrop(handler, scope = globalThis) {
   if (typeof handler !== 'function')
     throw new TypeError('workspace drop handler must be a function')
-  return requireDshStudio(scope).workspace.onDrop(handler)
+  return requireHarnessDeck(scope).workspace.onDrop(handler)
 }
 
 /** Feature-detect the read-only Host service without requiring HarnessDeck. */
-export function getDshStudioHost(ctx) {
+export function getHarnessDeckHost(ctx) {
   if ((typeof ctx !== 'object' && typeof ctx !== 'function') || ctx === null) {
     return undefined
   }
-  const host = typeof ctx.get === 'function' ? ctx.get('dshStudioHost') : ctx.dshStudioHost
+  const host = typeof ctx.get === 'function' ? ctx.get('harnessDeckHost') : ctx.harnessDeckHost
   if (typeof host !== 'object' || host === null) return undefined
-  return host.protocol === DSH_STUDIO_HOST_PROTOCOL ? host : undefined
+  return host.protocol === HARNESSDECK_HOST_PROTOCOL ? host : undefined
 }
 
 /** Require the current Host contract with a stable compatibility error. */
-export function requireDshStudioHost(ctx) {
-  const host = getDshStudioHost(ctx)
+export function requireHarnessDeckHost(ctx) {
+  const host = getHarnessDeckHost(ctx)
   if (host) return host
   const seen =
     (typeof ctx === 'object' || typeof ctx === 'function') && ctx !== null
       ? typeof ctx.get === 'function'
-        ? ctx.get('dshStudioHost')?.protocol
-        : ctx.dshStudioHost?.protocol
+        ? ctx.get('harnessDeckHost')?.protocol
+        : ctx.harnessDeckHost?.protocol
       : undefined
   if (seen !== undefined) {
     throw new Error(
-      `HarnessDeck Host Protocol ${String(seen)} is not supported; this plugin requires Host Protocol ${DSH_STUDIO_HOST_PROTOCOL}`,
+      `HarnessDeck Host Protocol ${String(seen)} is not supported; this plugin requires Host Protocol ${HARNESSDECK_HOST_PROTOCOL}`,
     )
   }
   throw new Error('HarnessDeck Host Protocol 1 is not available in this Harness')

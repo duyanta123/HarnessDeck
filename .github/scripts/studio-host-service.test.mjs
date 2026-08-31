@@ -5,13 +5,13 @@ import { join } from 'node:path'
 import test from 'node:test'
 
 import {
-  DSH_STUDIO_HOST_PROTOCOL,
+  HARNESSDECK_HOST_PROTOCOL,
   apply,
   createStudioHostService,
-} from '../../src-tauri/runtime-contract/dsh-studio-integration/lib/index.js'
+} from '../../src-tauri/runtime-contract/harnessdeck-integration/lib/index.js'
 
 async function fixture() {
-  const root = await mkdtemp(join(tmpdir(), 'dsh-studio-host-service-'))
+  const root = await mkdtemp(join(tmpdir(), 'harnessdeck-host-service-'))
   const profiles = join(root, 'profiles')
   const web = join(profiles, 'web')
   const research = join(profiles, 'research')
@@ -40,10 +40,10 @@ async function fixture() {
 
 function environment(web) {
   return {
-    DSH_STUDIO_PROFILE: 'web',
-    DSH_STUDIO_PROFILE_DIR: web,
-    DSH_STUDIO_VERSION: '0.8.0',
-    DSH_STUDIO_RUNTIME_VERSION: '0.1.1-rc.2',
+    HARNESSDECK_PROFILE: 'web',
+    HARNESSDECK_PROFILE_DIR: web,
+    HARNESSDECK_VERSION: '0.1.0',
+    HARNESSDECK_RUNTIME_VERSION: '0.1.1-rc.2',
   }
 }
 
@@ -52,7 +52,7 @@ test('Host service exposes frozen read-only runtime and bounded profile facts', 
   try {
     const lifetime = createStudioHostService(environment(made.web))
     const host = lifetime.service
-    assert.equal(host.protocol, DSH_STUDIO_HOST_PROTOCOL)
+    assert.equal(host.protocol, HARNESSDECK_HOST_PROTOCOL)
     assert.deepEqual(host.capabilities, ['profiles.read', 'runtime.read'])
     assert.deepEqual(host.restrictions, {
       arbitraryCommands: false,
@@ -96,15 +96,15 @@ test('Host service rejects forged and unsafe generation identities', async () =>
   const made = await fixture()
   try {
     assert.throws(
-      () => createStudioHostService({ ...environment(made.web), DSH_STUDIO_PROFILE: '../web' }),
+      () => createStudioHostService({ ...environment(made.web), HARNESSDECK_PROFILE: '../web' }),
       /profile name is invalid/,
     )
     assert.throws(
-      () => createStudioHostService({ ...environment(made.web), DSH_STUDIO_PROFILE: 'other' }),
+      () => createStudioHostService({ ...environment(made.web), HARNESSDECK_PROFILE: 'other' }),
       /identity does not match/,
     )
     assert.throws(
-      () => createStudioHostService({ ...environment(made.web), DSH_STUDIO_PROFILE_DIR: 'web' }),
+      () => createStudioHostService({ ...environment(made.web), HARNESSDECK_PROFILE_DIR: 'web' }),
       /must be absolute/,
     )
   } finally {
@@ -148,12 +148,12 @@ test('Cordis adapter publishes once and closes retained references with its fibe
     let close
     const ctx = {
       provide(name, value) {
-        assert.equal(name, 'dshStudioHost')
+        assert.equal(name, 'harnessDeckHost')
         host = value
         return () => {}
       },
       effect(factory, label) {
-        assert.equal(label, 'dsh-studio: Host service lifetime')
+        assert.equal(label, 'harnessdeck: Host service lifetime')
         close = factory()
       },
     }

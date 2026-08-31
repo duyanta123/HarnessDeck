@@ -4,7 +4,7 @@ import { announce, onSharedChange } from '@/lib/ipc'
 
 export type Presentation = 'compatibility' | 'extended' | 'advanced'
 
-const KEY = 'dsh-studio.presentation'
+const KEY = 'harnessdeck.presentation'
 
 function remembered(): Presentation {
   try {

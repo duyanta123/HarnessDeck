@@ -28,12 +28,12 @@ describe('presentation preference', () => {
     usePresentation.getState().choose('advanced')
 
     expect(usePresentation.getState().mode).toBe('advanced')
-    expect(localStorage.setItem).toHaveBeenCalledWith('dsh-studio.presentation', 'advanced')
+    expect(localStorage.setItem).toHaveBeenCalledWith('harnessdeck.presentation', 'advanced')
     expect(shared.announce).toHaveBeenCalledWith('presentation')
   })
 
   it('restores the additive extended mode across windows', async () => {
-    stored.set('dsh-studio.presentation', 'extended')
+    stored.set('harnessdeck.presentation', 'extended')
     vi.resetModules()
     const { usePresentation } = await import('@/state/presentation')
     expect(usePresentation.getState().mode).toBe('extended')

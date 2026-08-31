@@ -1,25 +1,25 @@
-# @moresyl/dsh-studio-sdk
+# @duyanta123/harnessdeck-sdk
 
 Typed, dependency-free feature detection for HarnessDeck Protocol 3. The SDK does
 not create a privileged channel: it only describes and validates the narrow
-`window.dshStudio` object that Studio injects into pages served by its active
+`window.harnessDeck` object that Studio injects into pages served by its active
 loopback Harness.
 
 ```js
-import { getDshStudio, hasDshStudioCapability } from '@moresyl/dsh-studio-sdk'
+import { getHarnessDeck, hasHarnessDeckCapability } from '@duyanta123/harnessdeck-sdk'
 
-const desktop = getDshStudio(window)
+const desktop = getHarnessDeck(window)
 if (desktop) {
   const offer = await desktop.hello()
-  if (hasDshStudioCapability(offer, 'workspace')) {
+  if (hasHarnessDeckCapability(offer, 'workspace')) {
     const chosen = await desktop.pick({ mode: 'directory' })
     if (chosen.path) console.log(await desktop.workspace.validate(chosen.path))
   }
 }
 ```
 
-Use `getDshStudio()` for plugins that also run in an ordinary browser or
-headless Harness. Use `requireDshStudio()` only when the entire feature is
+Use `getHarnessDeck()` for plugins that also run in an ordinary browser or
+headless Harness. Use `requireHarnessDeck()` only when the entire feature is
 Desktop-specific. Never retain the object across a Harness navigation/restart;
 feature-detect again in the new page.
 
@@ -37,12 +37,12 @@ roster. It deliberately cannot start commands, access native handles, install
 packages, or mutate Profiles.
 
 ```js
-import { getDshStudioHost } from '@moresyl/dsh-studio-sdk'
+import { getHarnessDeckHost } from '@duyanta123/harnessdeck-sdk'
 
 export const inject = []
 
 export function apply(ctx) {
-  const studio = getDshStudioHost(ctx)
+  const studio = getHarnessDeckHost(ctx)
   if (!studio) return
   ctx.logger.info(
     `running in ${studio.studio.name} ${studio.studio.version} ` +

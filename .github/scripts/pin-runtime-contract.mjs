@@ -27,7 +27,7 @@ export function pinContract(lock) {
         : value,
     ),
   )
-  pinned.name = 'dsh-studio-managed-runtime'
+  pinned.name = 'harnessdeck-managed-runtime'
   pinned.packages[''].name = pinned.name
   pinned.packages[''].dependencies = dependencies
   return {

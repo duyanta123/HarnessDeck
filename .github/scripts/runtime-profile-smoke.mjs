@@ -31,20 +31,20 @@ export async function prepareSmokeProfile(runtimeRoot, dshHome) {
   const profile = join(dshHome, 'profiles', 'web')
   const marker = join(dshHome, 'studio-host-contract.json')
   const probePatch = join(dshHome, 'studio-host-contract.patch.yml')
-  const integrationSource = join(runtimeRoot, 'node_modules', '@moresyl', 'dsh-studio-integration')
+  const integrationSource = join(runtimeRoot, 'node_modules', '@duyanta123', 'harnessdeck-integration')
   const integrationTarget = join(
     dshHome,
     'profiles',
     'node_modules',
-    '@moresyl',
-    'dsh-studio-integration',
+    '@duyanta123',
+    'harnessdeck-integration',
   )
   const probeTarget = join(
     dshHome,
     'profiles',
     'node_modules',
-    '@moresyl',
-    'dsh-studio-host-contract-probe',
+    '@duyanta123',
+    'harnessdeck-host-contract-probe',
   )
   await Promise.all([
     mkdir(profile, { recursive: true }),
@@ -73,7 +73,7 @@ export async function prepareSmokeProfile(runtimeRoot, dshHome) {
       join(probeTarget, 'package.json'),
       `${JSON.stringify(
         {
-          name: '@moresyl/dsh-studio-host-contract-probe',
+          name: '@duyanta123/harnessdeck-host-contract-probe',
           version: '0.0.0',
           private: true,
           type: 'module',
@@ -86,10 +86,10 @@ export async function prepareSmokeProfile(runtimeRoot, dshHome) {
     writeFile(
       join(probeTarget, 'index.js'),
       `import { writeFileSync } from 'node:fs'\n\n` +
-        `export const name = 'dsh-studio-host-contract-probe'\n` +
-        `export const inject = ['dshStudioHost']\n\n` +
+        `export const name = 'harnessdeck-host-contract-probe'\n` +
+        `export const inject = ['harnessDeckHost']\n\n` +
         `export function apply(ctx, config) {\n` +
-        `  const host = ctx.dshStudioHost\n` +
+        `  const host = ctx.harnessDeckHost\n` +
         `  const current = host.profiles.list().find((profile) => profile.name === host.profiles.current.name)\n` +
         `  writeFileSync(config.marker, JSON.stringify({\n` +
         `    protocol: host.protocol,\n` +
@@ -103,7 +103,7 @@ export async function prepareSmokeProfile(runtimeRoot, dshHome) {
     ),
     writeFile(
       probePatch,
-      `- insert:\n  - id: dsh-studio-host-contract-probe\n    name: '@moresyl/dsh-studio-host-contract-probe'\n    config:\n      marker: ${JSON.stringify(marker.replaceAll('\\', '/'))}\n`,
+      `- insert:\n  - id: harnessdeck-host-contract-probe\n    name: '@duyanta123/harnessdeck-host-contract-probe'\n    config:\n      marker: ${JSON.stringify(marker.replaceAll('\\', '/'))}\n`,
     ),
     writeFile(join(profile, 'cordis.patch.yml'), '[]\n'),
     writeFile(
@@ -157,10 +157,10 @@ export async function verifyProfileBoot({
         ...process.env,
         DSH_HOME: dshHome,
         DSH_DESKTOP: '1',
-        DSH_STUDIO_PROFILE: 'web',
-        DSH_STUDIO_PROFILE_DIR: profile,
-        DSH_STUDIO_VERSION: studioVersion,
-        DSH_STUDIO_RUNTIME_VERSION: harnessVersion,
+        HARNESSDECK_PROFILE: 'web',
+        HARNESSDECK_PROFILE_DIR: profile,
+        HARNESSDECK_VERSION: studioVersion,
+        HARNESSDECK_RUNTIME_VERSION: harnessVersion,
       },
       stdio: ['ignore', 'pipe', 'pipe'],
       windowsHide: true,

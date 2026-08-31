@@ -25,7 +25,7 @@
 Profile 和工作区。打包后的 macOS/Linux 应用只从登录 Shell 恢复允许列表中的开发环境变量，
 不会导入凭据。
 
-Harness 页面可以探测冻结的 Protocol 3 `window.dshStudio` API，调用通知、选择器、角标、深链、Profile 查询/选择、精确版本插件安装/卸载，以及原生 Workspace 准入/拖放信号。桥接层只接受当前受监管的回环 Harness 来源，不开放原始 Tauri IPC 或 Shell 执行。
+Harness 页面可以探测冻结的 Protocol 3 `window.harnessDeck` API，调用通知、选择器、角标、深链、Profile 查询/选择、精确版本插件安装/卸载，以及原生 Workspace 准入/拖放信号。桥接层只接受当前受监管的回环 Harness 来源，不开放原始 Tauri IPC 或 Shell 执行。
 
 Harness Host 插件还可以单独探测只读 Host Protocol 1，读取当前 Studio/Harness 版本和有界
 Profile 清单。该服务不提供原生句柄、命令执行器、包修改或 Profile 修改。详见

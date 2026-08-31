@@ -9,7 +9,7 @@ const manifest = {
   notes: 'fixed',
   platforms: {
     'windows-x86_64': {
-      url: 'https://github.com/Moresyl/dsh-studio/releases/download/v0.7.2/app.zip',
+      url: 'https://github.com/duyanta123/HarnessDeck/releases/download/v0.1.0/app.zip',
       signature: 'trusted-signature',
     },
   },

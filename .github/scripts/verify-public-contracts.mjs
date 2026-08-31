@@ -53,7 +53,7 @@ export async function verifyPublicContracts(root = DEFAULT_ROOT) {
     [
       'src/lib/bridge.ts',
       'src-tauri/src/desktop/mod.rs',
-      'src-tauri/runtime-contract/dsh-studio-integration/lib/index.js',
+      'src-tauri/runtime-contract/harnessdeck-integration/lib/index.js',
       'sdk/index.js',
       'sdk/index.d.ts',
       'docs/plugin-development.md',
@@ -89,8 +89,8 @@ export async function verifyPublicContracts(root = DEFAULT_ROOT) {
   const protocols = [
     protocolNumber(bridge, /export const PROTOCOL = (\d+)/g, 'browser bridge'),
     protocolNumber(rust, /const PROTOCOL: u32 = (\d+);/g, 'native bridge'),
-    protocolNumber(sdk, /export const DSH_STUDIO_PROTOCOL = (\d+)/g, 'SDK runtime'),
-    protocolNumber(sdkTypes, /export const DSH_STUDIO_PROTOCOL: (\d+)/g, 'SDK types'),
+    protocolNumber(sdk, /export const HARNESSDECK_PROTOCOL = (\d+)/g, 'SDK runtime'),
+    protocolNumber(sdkTypes, /export const HARNESSDECK_PROTOCOL: (\d+)/g, 'SDK types'),
   ]
   if (new Set(protocols).size !== 1 || protocols[0] !== 3) {
     throw new Error(`public protocol declarations differ: ${protocols.join(', ')}`)
@@ -98,11 +98,11 @@ export async function verifyPublicContracts(root = DEFAULT_ROOT) {
   const hostProtocols = [
     protocolNumber(
       hostIntegration,
-      /export const DSH_STUDIO_HOST_PROTOCOL = (\d+)/g,
+      /export const HARNESSDECK_HOST_PROTOCOL = (\d+)/g,
       'managed Host integration',
     ),
-    protocolNumber(sdk, /export const DSH_STUDIO_HOST_PROTOCOL = (\d+)/g, 'SDK Host runtime'),
-    protocolNumber(sdkTypes, /export const DSH_STUDIO_HOST_PROTOCOL: (\d+)/g, 'SDK Host types'),
+    protocolNumber(sdk, /export const HARNESSDECK_HOST_PROTOCOL = (\d+)/g, 'SDK Host runtime'),
+    protocolNumber(sdkTypes, /export const HARNESSDECK_HOST_PROTOCOL: (\d+)/g, 'SDK Host types'),
   ]
   if (new Set(hostProtocols).size !== 1 || hostProtocols[0] !== 1) {
     throw new Error(`Host protocol declarations differ: ${hostProtocols.join(', ')}`)

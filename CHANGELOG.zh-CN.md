@@ -9,7 +9,22 @@
 
 ## [未发布]
 
-## [0.1.0] —— 2026-08-28
+### 变更
+
+- 完成 fork 品牌收编：托管运行时集成更名为 `@duyanta123/harnessdeck-integration`
+  （位于 `runtime-contract/harnessdeck-integration/`），启动器注入的环境变量由
+  `DSH_STUDIO_*` 更名为 `HARNESSDECK_*`。
+- 插件 SDK 迁移为 `@duyanta123/harnessdeck-sdk`：`getHarnessDeck`、`requireHarnessDeck`、
+  `hasHarnessDeckCapability`、`onHarnessDeckWorkspaceDrop`、`getHarnessDeckHost`、
+  `requireHarnessDeckHost` 取代旧名称；页面注入合同改为 `window.harnessDeck`，
+  Cordis Host 服务以 `harnessDeckHost` 发布。
+- Profile 导出声明改为 `harnessdeck-profile`（旧的 `dsh-studio-profile` 导出文件不再
+  可导入），远程访问 Cookie 更名为 `harnessdeck_remote`，壳的本地设置改用
+  `harnessdeck.*` 存储键（主题、引导与界面模式选择会重置一次）。
+- 打包与发布自动化改为面向本仓库：包管理清单按 `harnessdeck`/`HarnessDeck` 产物生成，
+  Scoop bucket 入口改为 `bucket/harnessdeck.json`，发布流水线任务名同步新品牌。
+
+## [0.1.0](https://github.com/duyanta123/HarnessDeck/releases/tag/v0.1.0) —— 2026-08-28
 
 ### 变更
 
@@ -628,7 +643,7 @@
 - **发布流水线。** 打了 tag 的版本由 CI 构建 Windows x64、Linux x64、
   macOS Apple Silicon 与 macOS Intel 四个目标。
 
-[未发布]: https://github.com/Moresyl/dsh-studio/compare/v0.8.0...HEAD
+[未发布]: https://github.com/duyanta123/HarnessDeck/compare/v0.1.0...HEAD
 [0.8.0]: https://github.com/Moresyl/dsh-studio/compare/v0.7.8...v0.8.0
 [0.7.8]: https://github.com/Moresyl/dsh-studio/compare/v0.7.7...v0.7.8
 [0.7.7]: https://github.com/Moresyl/dsh-studio/compare/v0.7.6...v0.7.7

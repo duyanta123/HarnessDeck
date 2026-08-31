@@ -86,7 +86,7 @@ pub fn payload<R: Runtime>(app: &AppHandle<R>) -> Result<Option<Payload>> {
 
 /// The immutable edition compiled into this binary.
 pub fn edition() -> &'static str {
-    match option_env!("DSH_STUDIO_EDITION") {
+    match option_env!("HARNESSDECK_EDITION") {
         Some("full") => "full",
         _ => "lite",
     }

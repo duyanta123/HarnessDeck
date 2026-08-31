@@ -1,12 +1,12 @@
 # Packaging
 
-Manifests for the five package managers DSH Studio ships through. Every file here
-is generated — including `bucket/dsh-studio.json` at the repository root — so
-**edit [`generate.mjs`](generate.mjs), not the output**:
+Manifests for the five package managers HarnessDeck ships through. Every file
+here is generated — including `bucket/harnessdeck.json` at the repository root —
+so **edit [`generate.mjs`](generate.mjs), not the output**:
 
 ```sh
 node packaging/generate.mjs          # newest release
-node packaging/generate.mjs v0.4.0   # a particular one
+node packaging/generate.mjs v0.1.0   # a particular one
 ```
 
 The script reads the release from the GitHub API, takes each SHA-256 from the
@@ -17,11 +17,15 @@ one is how a bucket ends up installing last month's build.
 
 | Channel       | Manifest                                              | State                                       |
 | ------------- | ----------------------------------------------------- | ------------------------------------------- |
-| Scoop         | [`bucket/dsh-studio.json`](../bucket/dsh-studio.json) | live from this repository                   |
-| winget        | [`winget/`](winget)                                   | validated, needs a pull request             |
-| Homebrew Cask | [`homebrew/dsh-studio.rb`](homebrew/dsh-studio.rb)    | needs its own tap repository                |
-| AUR           | [`aur/`](aur)                                         | needs an upload to aur.archlinux.org        |
-| Flathub       | [`flathub/`](flathub)                                 | locally buildable; sandbox limits CLI tools |
+| Scoop         | [`bucket/harnessdeck.json`](../bucket/harnessdeck.json) | live from this repository once the first release lands |
+| winget        | `winget/`                                             | generated at release time, needs a pull request |
+| Homebrew Cask | `homebrew/harnessdeck.rb`                             | generated at release time, needs its own tap repository |
+| AUR           | `aur/`                                                | generated at release time, needs an upload to aur.archlinux.org |
+| Flathub       | `flathub/`                                            | generated at release time; locally buildable |
+
+Until the first tagged release exists, the generated manifests are absent on
+purpose: there is no published artifact to point them at, and a manifest with a
+placeholder digest is worse than none.
 
 ## Publishing
 
@@ -35,8 +39,8 @@ committed files without recalculating release URLs or digests by hand.
 this one already is:
 
 ```powershell
-scoop bucket add dsh https://github.com/Moresyl/dsh-studio
-scoop install dsh-studio
+scoop bucket add harnessdeck https://github.com/duyanta123/HarnessDeck
+scoop install harnessdeck
 ```
 
 Scoop has no concept of running an installer, so the manifest drives the NSIS one
@@ -48,7 +52,7 @@ a space in it is safe.
 
 **winget** wants a pull request to
 [microsoft/winget-pkgs](https://github.com/microsoft/winget-pkgs) under
-`manifests/m/Moresyl/DSHStudio/<version>/`. Check it first — this is the one
+`manifests/d/duyanta123/HarnessDeck/<version>/`. Check it first — this is the one
 channel with a validator that runs locally:
 
 ```powershell
@@ -60,20 +64,20 @@ megabyte smaller, and it installs per-user, so `winget install` needs no
 elevation. The `Moniker` field is what makes the short form resolve:
 
 ```powershell
-winget install dsh-studio
+winget install harnessdeck
 ```
 
 **Homebrew** requires a cask to live in a repository named `homebrew-<something>`,
-so this one cannot be tapped from here. Create `Moresyl/homebrew-dsh` with the
-cask at `Casks/dsh-studio.rb`, then:
+so this one cannot be tapped from here. Create `duyanta123/homebrew-harnessdeck`
+with the cask at `Casks/harnessdeck.rb`, then:
 
 ```sh
-brew tap moresyl/dsh https://github.com/Moresyl/homebrew-dsh
-brew install --cask dsh-studio
-brew audit --cask --online dsh-studio   # what the tap's CI will run
+brew tap duyanta123/harnessdeck https://github.com/duyanta123/homebrew-harnessdeck
+brew install --cask harnessdeck
+brew audit --cask --online harnessdeck   # what the tap's CI will run
 ```
 
-**AUR** needs a push to `ssh://aur@aur.archlinux.org/dsh-studio-bin.git` with the
+**AUR** needs a push to `ssh://aur@aur.archlinux.org/harnessdeck-bin.git` with the
 `PKGBUILD` and `.SRCINFO` at the repository root. Regenerate `.SRCINFO` on a
 machine with makepkg rather than trusting the transcription here — the AUR reads
 that file instead of executing the PKGBUILD, so a stale one shows the wrong

@@ -95,9 +95,9 @@ test('copies the local integration package into the offline install context', as
     await copyRuntimeContract(destination)
     await access(join(destination, 'package-lock.json'))
     const integration = JSON.parse(
-      await readFile(join(destination, 'dsh-studio-integration', 'package.json'), 'utf8'),
+      await readFile(join(destination, 'harnessdeck-integration', 'package.json'), 'utf8'),
     )
-    assert.equal(integration.name, '@moresyl/dsh-studio-integration')
+    assert.equal(integration.name, '@duyanta123/harnessdeck-integration')
   } finally {
     await rm(scratch, { recursive: true, force: true })
   }

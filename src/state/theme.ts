@@ -24,7 +24,7 @@ import { material } from '@/lib/platform'
 export type Theme = 'system' | 'light' | 'dark'
 
 /** Namespaced, because a webview's storage is shared with whatever it hosts. */
-const KEY = 'dsh-studio.theme'
+const KEY = 'harnessdeck.theme'
 
 const isTheme = (value: unknown): value is Theme =>
   value === 'system' || value === 'light' || value === 'dark'

@@ -60,7 +60,7 @@ const WORKSPACE: &str = "pnpm-workspace.yaml";
 /// put in it. The array is the part its loader reads, and a new profile has
 /// nothing to say in there yet.
 const EMPTY_PATCH: &str = "[]\n";
-const STUDIO_INTEGRATION: &str = "@moresyl/dsh-studio-integration";
+const STUDIO_INTEGRATION: &str = "@duyanta123/harnessdeck-integration";
 const WEB_APP_BUNDLE: &str = "@deepseek-ai/dsh-web-app";
 const WEB_PROFILE_BUNDLES: [&str; 2] = ["@deepseek-ai/dsh-base", WEB_APP_BUNDLE];
 const PROFILE_WORKSPACE: &str =
@@ -74,7 +74,7 @@ const STUDIO_MODULE_FILES: [&str; 4] = [
 
 /// What an exported profile is, so a file picked by mistake is caught before
 /// anything is written.
-const DECLARATION_KIND: &str = "dsh-studio-profile";
+const DECLARATION_KIND: &str = "harnessdeck-profile";
 
 /// The declaration format. Version two adds a canonical SHA-256 integrity
 /// envelope; version one remains readable as an explicitly unverified legacy
@@ -292,12 +292,12 @@ fn prepare_for_studio_in(dir: &Path, bootstrap_web: bool) -> Result<bool> {
 fn sync_studio_runtime_module() -> Result<()> {
     let source = paths::harness_dir()
         .join("node_modules")
-        .join("@moresyl")
-        .join("dsh-studio-integration");
+        .join("@duyanta123")
+        .join("harnessdeck-integration");
     let target = paths::profiles_dir()
         .join(SHARED_MODULES)
-        .join("@moresyl")
-        .join("dsh-studio-integration");
+        .join("@duyanta123")
+        .join("harnessdeck-integration");
     sync_runtime_module_in(&source, &target)
 }
 
@@ -1123,7 +1123,7 @@ mod tests {
 
     fn backup_path(label: &str) -> PathBuf {
         std::env::temp_dir().join(format!(
-            "dsh-studio-profile-backup-{label}-{}.json",
+            "harnessdeck-profile-backup-{label}-{}.json",
             std::process::id()
         ))
     }
@@ -1304,7 +1304,7 @@ mod tests {
 
     #[test]
     fn a_profile_is_written_with_the_three_files_the_harness_reads() {
-        let dir = std::env::temp_dir().join("dsh-studio-profiles-initialize");
+        let dir = std::env::temp_dir().join("harnessdeck-profiles-initialize");
         let _ = std::fs::remove_dir_all(&dir);
         let profile = dir.join("work");
 
@@ -1334,7 +1334,7 @@ mod tests {
     #[test]
     fn old_web_profiles_drop_only_the_persisted_runtime_integration() {
         let root = std::env::temp_dir().join(format!(
-            "dsh-studio-profile-integration-{}",
+            "harnessdeck-profile-integration-{}",
             std::process::id()
         ));
         let _ = std::fs::remove_dir_all(&root);
@@ -1371,7 +1371,7 @@ mod tests {
     #[test]
     fn a_missing_web_profile_bootstraps_without_runtime_owned_layers() {
         let root = std::env::temp_dir().join(format!(
-            "dsh-studio-profile-bootstrap-{}",
+            "harnessdeck-profile-bootstrap-{}",
             std::process::id()
         ));
         let _ = std::fs::remove_dir_all(&root);
@@ -1389,7 +1389,7 @@ mod tests {
     #[test]
     fn a_headless_profile_gets_no_studio_runtime_layer() {
         let root = std::env::temp_dir().join(format!(
-            "dsh-studio-profile-headless-{}",
+            "harnessdeck-profile-headless-{}",
             std::process::id()
         ));
         let _ = std::fs::remove_dir_all(&root);
@@ -1404,11 +1404,11 @@ mod tests {
     #[test]
     fn the_private_runtime_module_is_materialized_in_the_shared_fallback() {
         let root = std::env::temp_dir().join(format!(
-            "dsh-studio-profile-runtime-module-{}",
+            "harnessdeck-profile-runtime-module-{}",
             std::process::id()
         ));
         let source = root.join("source");
-        let target = root.join("profiles/node_modules/@moresyl/dsh-studio-integration");
+        let target = root.join("profiles/node_modules/@duyanta123/harnessdeck-integration");
         let _ = std::fs::remove_dir_all(&root);
         for (index, relative) in STUDIO_MODULE_FILES.iter().enumerate() {
             let file = source.join(relative);
@@ -1435,7 +1435,7 @@ mod tests {
     /// pnpm's defaults apply — not an empty file that would override them.
     #[test]
     fn a_profile_written_without_a_workspace_file_has_none() {
-        let dir = std::env::temp_dir().join("dsh-studio-profiles-no-workspace");
+        let dir = std::env::temp_dir().join("harnessdeck-profiles-no-workspace");
         let _ = std::fs::remove_dir_all(&dir);
         let profile = dir.join("work");
 

@@ -15,7 +15,7 @@ import { create } from 'zustand'
 import { checkForUpdate, installUpdate, type DownloadProgress, type Release } from '@/lib/updater'
 import { reportFailure } from '@/state/failure'
 
-const DISMISSED_KEY = 'dsh-studio:update:dismissed'
+const DISMISSED_KEY = 'harnessdeck:update:dismissed'
 
 /** Wait before the first check, so a launch spends its first seconds launching. */
 const FIRST_CHECK_MS = 4_000

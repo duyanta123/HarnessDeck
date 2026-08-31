@@ -3,9 +3,9 @@
 import { lstatSync, readFileSync, readdirSync } from 'node:fs'
 import { basename, dirname, isAbsolute, resolve } from 'node:path'
 
-export const name = 'dsh-studio-integration'
+export const name = 'harnessdeck-integration'
 export const inject = []
-export const DSH_STUDIO_HOST_PROTOCOL = 1
+export const HARNESSDECK_HOST_PROTOCOL = 1
 
 const MAX_PROFILES = 128
 const MAX_MANIFEST_BYTES = 256 * 1024
@@ -16,25 +16,25 @@ const WEB_BUNDLES = Object.freeze([
 
 /** Build one generation-scoped service from launcher-authenticated values. */
 export function createStudioHostService(environment = process.env) {
-  const profileName = requireText(environment.DSH_STUDIO_PROFILE, 'profile name')
+  const profileName = requireText(environment.HARNESSDECK_PROFILE, 'profile name')
   if (!isProfileName(profileName)) {
-    throw new Error('dsh-studio: Host profile name is invalid')
+    throw new Error('harnessdeck: Host profile name is invalid')
   }
 
   const profileDir = requireAbsoluteDirectory(
-    environment.DSH_STUDIO_PROFILE_DIR,
+    environment.HARNESSDECK_PROFILE_DIR,
     'profile directory',
   )
   if (basename(profileDir) !== profileName) {
-    throw new Error('dsh-studio: Host profile identity does not match its directory')
+    throw new Error('harnessdeck: Host profile identity does not match its directory')
   }
   const profilesRoot = dirname(profileDir)
-  const studioVersion = requireText(environment.DSH_STUDIO_VERSION, 'Studio version')
-  const harnessVersion = requireText(environment.DSH_STUDIO_RUNTIME_VERSION, 'Harness version')
+  const studioVersion = requireText(environment.HARNESSDECK_VERSION, 'Studio version')
+  const harnessVersion = requireText(environment.HARNESSDECK_RUNTIME_VERSION, 'Harness version')
   let active = true
 
   const assertActive = () => {
-    if (!active) throw new Error('dsh-studio: Host service generation is closed')
+    if (!active) throw new Error('harnessdeck: Host service generation is closed')
   }
   const current = Object.freeze({ name: profileName, dir: profileDir })
   const capabilities = Object.freeze([
@@ -55,8 +55,8 @@ export function createStudioHostService(environment = process.env) {
     },
   })
   const service = Object.freeze({
-    protocol: DSH_STUDIO_HOST_PROTOCOL,
-    studio: Object.freeze({ name: 'DSH Studio', version: studioVersion }),
+    protocol: HARNESSDECK_HOST_PROTOCOL,
+    studio: Object.freeze({ name: 'HarnessDeck', version: studioVersion }),
     harness: Object.freeze({ version: harnessVersion }),
     platform: process.platform,
     capabilities,
@@ -75,10 +75,10 @@ export function createStudioHostService(environment = process.env) {
 /** Publish the service through Cordis and bind retained references to this fiber. */
 export function apply(ctx) {
   const lifetime = createStudioHostService()
-  ctx.provide('dshStudioHost', lifetime.service)
+  ctx.provide('harnessDeckHost', lifetime.service)
   ctx.effect(
     () => () => lifetime.dispose(),
-    'dsh-studio: Host service lifetime',
+    'harnessdeck: Host service lifetime',
   )
 }
 
@@ -88,7 +88,7 @@ function readProfileRoster(profilesRoot) {
     .sort((left, right) => left.name.localeCompare(right.name))
   if (candidates.length > MAX_PROFILES) {
     throw new Error(
-      `dsh-studio: Host profile roster exceeds the ${MAX_PROFILES}-profile safety limit`,
+      `harnessdeck: Host profile roster exceeds the ${MAX_PROFILES}-profile safety limit`,
     )
   }
   return Object.freeze(candidates.map((entry) => readProfile(profilesRoot, entry.name)))
@@ -98,7 +98,7 @@ function readProfile(profilesRoot, profileName) {
   const profileDir = resolve(profilesRoot, profileName)
   const metadata = lstatSync(profileDir)
   if (metadata.isSymbolicLink() || !metadata.isDirectory()) {
-    throw new Error(`dsh-studio: Host profile ${JSON.stringify(profileName)} is not a safe directory`)
+    throw new Error(`harnessdeck: Host profile ${JSON.stringify(profileName)} is not a safe directory`)
   }
 
   const manifestPath = resolve(profileDir, 'package.json')
@@ -142,7 +142,7 @@ function plainRecord(value) {
 
 function requireText(value, label) {
   if (typeof value !== 'string' || value.length === 0 || value.includes('\0')) {
-    throw new Error(`dsh-studio: Host ${label} is missing or invalid`)
+    throw new Error(`harnessdeck: Host ${label} is missing or invalid`)
   }
   return value
 }
@@ -150,12 +150,12 @@ function requireText(value, label) {
 function requireAbsoluteDirectory(value, label) {
   const path = requireText(value, label)
   if (!isAbsolute(path)) {
-    throw new Error(`dsh-studio: Host ${label} must be absolute`)
+    throw new Error(`harnessdeck: Host ${label} must be absolute`)
   }
   const resolved = resolve(path)
   const metadata = lstatSync(resolved)
   if (metadata.isSymbolicLink() || !metadata.isDirectory()) {
-    throw new Error(`dsh-studio: Host ${label} is not a safe directory`)
+    throw new Error(`harnessdeck: Host ${label} is not a safe directory`)
   }
   return resolved
 }

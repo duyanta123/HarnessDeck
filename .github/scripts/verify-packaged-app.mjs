@@ -95,9 +95,9 @@ async function verifyMac(files) {
   if (!mount) throw new Error('hdiutil did not report a mounted volume')
   try {
     const executable = (await walk(mount)).find(
-      (file) => file.includes('.app/Contents/MacOS/') && basename(file) === 'dsh-studio',
+      (file) => file.includes('.app/Contents/MacOS/') && basename(file) === 'harnessdeck',
     )
-    if (!executable) throw new Error('DMG contains no DSH Studio application executable')
+    if (!executable) throw new Error('DMG contains no HarnessDeck application executable')
     await verifyOffline(mount)
     await smoke(executable)
   } finally {
@@ -144,11 +144,11 @@ async function installedExecutable(directory) {
   const executable = files.find((file) => {
     const name = basename(file).toLowerCase()
     return (
-      (name === 'dsh-studio' || name === 'dsh-studio.exe' || name === 'dsh studio.exe') &&
+      (name === 'harnessdeck' || name === 'harnessdeck.exe') &&
       !file.toLowerCase().includes('uninstall')
     )
   })
-  if (!executable) throw new Error(`no packaged DSH Studio executable found under ${directory}`)
+  if (!executable) throw new Error(`no packaged HarnessDeck executable found under ${directory}`)
   return executable
 }
 

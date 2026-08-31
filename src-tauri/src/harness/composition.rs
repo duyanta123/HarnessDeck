@@ -145,7 +145,7 @@ fn conflicting_third_party(duplicates: &[Duplicate], manifest: &Value) -> Option
             (active
                 && dependencies.contains_key(owner)
                 && !owner.starts_with("@deepseek-ai/")
-                && owner != "@moresyl/dsh-studio-integration")
+                && owner != "@duyanta123/harnessdeck-integration")
                 .then(|| owner.clone())
         })
     })
@@ -230,12 +230,12 @@ mod tests {
             id: "same".into(),
             owners: vec![
                 "@deepseek-ai/dsh-base".into(),
-                "@moresyl/dsh-studio-integration".into(),
+                "@duyanta123/harnessdeck-integration".into(),
             ],
         }];
         let document = manifest(
-            &["@deepseek-ai/dsh-base", "@moresyl/dsh-studio-integration"],
-            &["@deepseek-ai/dsh-base", "@moresyl/dsh-studio-integration"],
+            &["@deepseek-ai/dsh-base", "@duyanta123/harnessdeck-integration"],
+            &["@deepseek-ai/dsh-base", "@duyanta123/harnessdeck-integration"],
         );
         assert_eq!(conflicting_third_party(&duplicates, &document), None);
     }

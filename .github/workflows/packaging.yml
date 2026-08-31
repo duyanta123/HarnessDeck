@@ -29,7 +29,7 @@ jobs:
           name: package-channel-manifests
           include-hidden-files: true
           path: |
-            bucket/dsh-studio.json
+            bucket/harnessdeck.json
             packaging/winget
             packaging/homebrew
             packaging/aur
@@ -54,18 +54,18 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: package-channel-manifests
-      - run: brew style packaging/homebrew/dsh-studio.rb
+      - run: brew style packaging/homebrew/harnessdeck.rb
       - name: Audit Cask from a temporary tap
         run: |
-          brew tap-new --no-git moresyl/dsh
-          tap_root="$(brew --repository moresyl/dsh)"
+          brew tap-new --no-git duyanta123/harnessdeck
+          tap_root="$(brew --repository duyanta123/harnessdeck)"
           mkdir -p "$tap_root/Casks"
-          cp packaging/homebrew/dsh-studio.rb "$tap_root/Casks/dsh-studio.rb"
+          cp packaging/homebrew/harnessdeck.rb "$tap_root/Casks/harnessdeck.rb"
           # This is an independent tap, not a submission to homebrew-cask, so
           # core's popularity threshold is not part of its validity. Platform
           # signing is optional until this repository has signing credentials,
           # so validation must not turn Gatekeeper into a release prerequisite.
-          brew audit --cask --strict moresyl/dsh/dsh-studio
+          brew audit --cask --strict duyanta123/harnessdeck/harnessdeck
 
   aur:
     name: Validate AUR package
@@ -97,16 +97,16 @@ jobs:
           sudo apt-get install -y appstream-compose flatpak flatpak-builder
           flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
           flatpak install --user -y flathub org.flatpak.Builder org.gnome.Platform//49 org.gnome.Sdk//49
-          flatpak-builder --user --force-clean --disable-rofiles-fuse build-dir packaging/flathub/io.github.moresyl.dshstudio.yml
+          flatpak-builder --user --force-clean --disable-rofiles-fuse build-dir packaging/flathub/app.harnessdeck.yml
       - name: Validate AppStream with Flathub's linter
         run: |
           flatpak run --user --filesystem="$GITHUB_WORKSPACE" \
             --command=flatpak-builder-lint org.flatpak.Builder \
-            appstream "$GITHUB_WORKSPACE/packaging/flathub/io.github.moresyl.dshstudio.metainfo.xml"
+            appstream "$GITHUB_WORKSPACE/packaging/flathub/app.harnessdeck.metainfo.xml"
 
   commit:
     name: Publish generated manifests to main
-    if: github.repository == 'Moresyl/dsh-studio'
+    if: github.repository == 'duyanta123/HarnessDeck'
     needs: [winget, homebrew, aur, flatpak]
     runs-on: ubuntu-22.04
     steps:
@@ -119,7 +119,7 @@ jobs:
       - name: Commit only validated channel manifests
         run: |
           git add -- \
-            bucket/dsh-studio.json \
+            bucket/harnessdeck.json \
             packaging/winget \
             packaging/homebrew \
             packaging/aur \

@@ -71,7 +71,7 @@ data URL，远程 URL 不会交给渲染器。
 
 ## Desktop 公共服务协议——Protocol 3
 
-由当前回环 Harness 来源提供的页面可以探测冻结的 `window.dshStudio`；普通浏览器标签页
+由当前回环 Harness 来源提供的页面可以探测冻结的 `window.harnessDeck`；普通浏览器标签页
 不会得到它。当前能力如下：
 
 | 服务        | 支持的操作                                        |
@@ -82,7 +82,7 @@ data URL，远程 URL 不会交给渲染器。
 | `workspace` | 原生准入 `validate`、目录拖放 `onDrop`            |
 
 ```js
-const desktop = window.dshStudio
+const desktop = window.harnessDeck
 if (!desktop || desktop.protocol !== 3) return
 
 const roster = await desktop.profiles.list()

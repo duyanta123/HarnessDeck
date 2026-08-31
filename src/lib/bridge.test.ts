@@ -473,7 +473,7 @@ function load({ observeJobs = false } = {}) {
       name: string,
       handler: (event: { data: unknown; source: unknown }) => void,
     ) => void (name === 'message' && listeners.push(handler)),
-    dshStudio: undefined as Client | undefined,
+    harnessDeck: undefined as Client | undefined,
   }
 
   new Function('window', SOURCE.replace('__DSH_PROTOCOL__', String(PROTOCOL)))(frame)
@@ -482,7 +482,7 @@ function load({ observeJobs = false } = {}) {
     sent,
     sockets,
     client: () => {
-      const client = frame.dshStudio
+      const client = frame.harnessDeck
       if (!client) throw new Error('the client script installed nothing')
       return client
     },
@@ -540,12 +540,12 @@ group('the injected client', () => {
   })
 
   it('stays out of the way in the window that has no window above it', () => {
-    const alone = { top: {}, addEventListener: () => {}, dshStudio: undefined }
+    const alone = { top: {}, addEventListener: () => {}, harnessDeck: undefined }
     alone.top = alone
 
     new Function('window', SOURCE.replace('__DSH_PROTOCOL__', String(PROTOCOL)))(alone)
 
-    expect(alone.dshStudio).toBeUndefined()
+    expect(alone.harnessDeck).toBeUndefined()
   })
 
   it('sends a call up and settles it on the answer', async () => {

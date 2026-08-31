@@ -2,11 +2,11 @@
  * The desktop, as seen from a page inside the harness.
  *
  * Injected into every frame this window loads, before that frame's own scripts
- * run, so a plugin finds `window.dshStudio` already there and never has to
+ * run, so a plugin finds `window.harnessDeck` already there and never has to
  * install anything to look for it. Absent means a browser rather than the
  * studio, which is the whole of feature detection:
  *
- *     if (window.dshStudio) await window.dshStudio.notify({ title: 'Done' })
+ *     if (window.harnessDeck) await window.harnessDeck.notify({ title: 'Done' })
  *
  * Nothing here reaches the shell's own command surface. Every call is a message
  * to the window above, which answers it or refuses it — see `src/lib/bridge.ts`
@@ -81,7 +81,7 @@
   window.__DSH_DESKTOP_PICK_DIRECTORY__ = pickDirectory
   window.__DSH_DESKTOP_VALIDATE_DIRECTORY__ = validateDirectory
 
-  window.dshStudio = Object.freeze({
+  window.harnessDeck = Object.freeze({
     protocol: PROTOCOL,
 
     /** What this desktop is, what it grants, and any link that was waiting. */

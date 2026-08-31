@@ -38,7 +38,7 @@ body:
         If it only happens sometimes, say roughly how often and what seems to bring it on.
         如果只是偶发，请说明大概多久出现一次、以及什么情况下更容易出现。
       placeholder: |
-        1. Launch DSH Studio / 启动 DSH Studio
+        1. Launch HarnessDeck / 启动 HarnessDeck
         2. Click 启动 / Click Start
         3. …
     validations:
@@ -60,7 +60,7 @@ body:
   - type: input
     id: app-version
     attributes:
-      label: DSH Studio version / 版本
+      label: HarnessDeck version / 版本
       description: >-
         The installer's file name carries it. If you built from source, the commit hash instead.
         安装包的文件名里带着版本号；如果是从源码构建的，写 commit 哈希。

@@ -54,7 +54,7 @@ const BODY_LIMIT: usize = 400;
 ///
 /// Injected rather than published as a package to install: a plugin author who
 /// has to add a dependency to find out whether the desktop is there will not
-/// bother, and `window.dshStudio` being either present or absent is the whole
+/// bother, and `window.harnessDeck` being either present or absent is the whole
 /// feature detection story.
 const CLIENT: &str = include_str!("client.js");
 

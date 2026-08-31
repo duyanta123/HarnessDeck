@@ -225,7 +225,7 @@ export async function copyRuntimeContract(destination) {
   await Promise.all([
     copyFile(join(source, 'package.json'), join(destination, 'package.json')),
     copyFile(join(source, 'package-lock.json'), join(destination, 'package-lock.json')),
-    cp(join(source, 'dsh-studio-integration'), join(destination, 'dsh-studio-integration'), {
+    cp(join(source, 'harnessdeck-integration'), join(destination, 'harnessdeck-integration'), {
       recursive: true,
     }),
   ])

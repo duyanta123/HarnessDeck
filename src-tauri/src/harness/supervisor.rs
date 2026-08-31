@@ -135,12 +135,12 @@ impl LaunchPlan {
             // The managed integration turns these launcher-authenticated values
             // into a read-only Host contract. Plugins never receive a native
             // handle, arbitrary command runner, or package-manager authority.
-            .env("DSH_STUDIO_VERSION", env!("CARGO_PKG_VERSION"))
-            .env("DSH_STUDIO_RUNTIME_VERSION", super::install::VERSION)
-            .env("DSH_STUDIO_PROFILE", &self.profile)
+            .env("HARNESSDECK_VERSION", env!("CARGO_PKG_VERSION"))
+            .env("HARNESSDECK_RUNTIME_VERSION", super::install::VERSION)
+            .env("HARNESSDECK_PROFILE", &self.profile)
             .env("DSH_HOME", crate::paths::dsh_home())
             .env(
-                "DSH_STUDIO_PROFILE_DIR",
+                "HARNESSDECK_PROFILE_DIR",
                 crate::paths::profile_dir(&self.profile),
             );
         #[cfg(windows)]
@@ -622,7 +622,7 @@ mod tests {
             host: "127.0.0.1".into(),
             port: 0,
             environment: BTreeMap::from([
-                ("DSH_STUDIO_PROFILE".into(), "forged".into()),
+                ("HARNESSDECK_PROFILE".into(), "forged".into()),
                 ("ORDINARY_LOGIN_EXPORT".into(), "kept".into()),
             ]),
         };
@@ -666,17 +666,17 @@ mod tests {
             Some("1")
         );
         assert_eq!(
-            environment.get("DSH_STUDIO_VERSION").map(String::as_str),
+            environment.get("HARNESSDECK_VERSION").map(String::as_str),
             Some(env!("CARGO_PKG_VERSION"))
         );
         assert_eq!(
             environment
-                .get("DSH_STUDIO_RUNTIME_VERSION")
+                .get("HARNESSDECK_RUNTIME_VERSION")
                 .map(String::as_str),
             Some(crate::harness::install::VERSION)
         );
         assert_eq!(
-            environment.get("DSH_STUDIO_PROFILE").map(String::as_str),
+            environment.get("HARNESSDECK_PROFILE").map(String::as_str),
             Some("web")
         );
         assert_eq!(

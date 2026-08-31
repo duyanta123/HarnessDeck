@@ -212,8 +212,8 @@ and are generated from a real release, so the version and the SHA-256 in them ar
 never hand-typed:
 
 ```powershell
-scoop bucket add dsh https://github.com/duyanta123/HarnessDeck
-scoop install dsh-studio
+scoop bucket add harnessdeck https://github.com/duyanta123/HarnessDeck
+scoop install harnessdeck
 ```
 
 winget, Homebrew Cask and AUR manifests are written and validated but not yet

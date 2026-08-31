@@ -245,7 +245,7 @@ where
 
     report(Progress::Chosen {
         version: artifact.version.clone(),
-        url: "bundled://dsh-studio-full/node".into(),
+        url: "bundled://harnessdeck-full/node".into(),
     });
     report(Progress::Verifying {
         version: artifact.version.clone(),

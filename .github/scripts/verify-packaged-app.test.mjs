@@ -15,9 +15,9 @@ test('rejects a missing bundle root', () => {
 })
 
 test('passes RPM paths with spaces directly to libarchive', () => {
-  assert.deepEqual(rpmExtractArgs('/tmp/bundle/DSH Studio.rpm', '/tmp/rpm output'), [
+  assert.deepEqual(rpmExtractArgs('/tmp/bundle/Harness Deck.rpm', '/tmp/rpm output'), [
     '-xf',
-    '/tmp/bundle/DSH Studio.rpm',
+    '/tmp/bundle/Harness Deck.rpm',
     '-C',
     '/tmp/rpm output',
   ])

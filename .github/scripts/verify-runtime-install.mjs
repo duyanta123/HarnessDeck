@@ -20,8 +20,8 @@ try {
     copyFile('src-tauri/runtime-contract/package.json', join(directory, 'package.json')),
     copyFile('src-tauri/runtime-contract/package-lock.json', join(directory, 'package-lock.json')),
     cp(
-      'src-tauri/runtime-contract/dsh-studio-integration',
-      join(directory, 'dsh-studio-integration'),
+      'src-tauri/runtime-contract/harnessdeck-integration',
+      join(directory, 'harnessdeck-integration'),
       { recursive: true },
     ),
   ])
@@ -54,7 +54,7 @@ try {
   if (pnpm.version !== expectedPnpm) {
     throw new Error(`installed pnpm ${pnpm.version ?? 'unknown'}, expected ${expectedPnpm}`)
   }
-  const integrationRoot = join(directory, 'node_modules', '@moresyl', 'dsh-studio-integration')
+  const integrationRoot = join(directory, 'node_modules', '@duyanta123', 'harnessdeck-integration')
   const integrationMetadata = await lstat(integrationRoot)
   if (integrationMetadata.isSymbolicLink()) {
     throw new Error('Studio integration was linked instead of materialized')

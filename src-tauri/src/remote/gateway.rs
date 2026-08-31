@@ -27,7 +27,7 @@ use tokio::sync::broadcast;
 use super::access::Access;
 
 /// Cookie a device gets after pairing, and presents on every later request.
-const COOKIE: &str = "dsh_studio_remote";
+const COOKIE: &str = "harnessdeck_remote";
 
 /// Query parameter carrying the pairing code in the scanned URL.
 const PAIR_PARAM: &str = "k";

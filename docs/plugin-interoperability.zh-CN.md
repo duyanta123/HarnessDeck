@@ -2,7 +2,7 @@
 
 [English](plugin-interoperability.md)
 
-状态：**支持 HarnessDeck 0.7.x**。线协议为 Protocol 3，目录 Schema 为 1.0.0，SDK
+状态：**支持 HarnessDeck 0.1.x**。线协议为 Protocol 3，目录 Schema 为 1.0.0，SDK
 包版本跟随应用版本。文中的“必须”“不得”“应该”是有意设定的规范要求。
 
 本合同明确分开三类扩展面：
@@ -11,7 +11,7 @@
    提供只读 Host Protocol 1，用于读取当前代身份和有界 Profile 清单，但不开放原始原生
    能力、命令执行器、包管理器或 Profile 修改权限。
 2. **Harness Web Client 插件**运行在受监管回环页面中，可以通过
-   `@moresyl/dsh-studio-sdk` 探测 Protocol 3。
+   `@duyanta123/harnessdeck-sdk` 探测 Protocol 3。
 3. **Studio 托管集成**随锁定运行时一起交付和验证，不是第三方权限入口；预期上游 seam
    变化时必须关闭失败。
 
@@ -38,11 +38,11 @@ Studio 市场中的包必须具有合法 npm 身份和已发布精确版本。Ha
 ## 能力与事件
 
 插件依赖可选桌面功能前必须调用 `hello()` 并检查 `capabilities`。只有
-`protocol === 3` 时，`window.dshStudio` 才代表兼容宿主；SDK 会强制这个检查。
+`protocol === 3` 时，`window.harnessDeck` 才代表兼容宿主；SDK 会强制这个检查。
 
 Protocol 3 有两类推送事件：
 
-- `onLink(handler)` 交付一个解析后的 `dsh://` 链接；启动前等待的链接由第一次
+- `onLink(handler)` 交付一个解析后的 `harnessdeck://` 链接；启动前等待的链接由第一次
   `hello()` 响应消费。
 - `workspace.onDrop(handler)` 向合格的顶层 Harness 客户端交付一个通过准入的原生目录
   路径；它不是文件系统读取权限。
@@ -52,7 +52,7 @@ Protocol 3 有两类推送事件：
 
 ### 只读 Host Protocol 1
 
-Host 插件可以通过 `getDshStudioHost(ctx)` 探测 `dshStudioHost`。该服务不可变且只属于
+Host 插件可以通过 `getHarnessDeckHost(ctx)` 探测 `harnessDeckHost`。该服务不可变且只属于
 当前 Cordis generation；`profiles.current` 不会原地改变，而 `profiles.list()` 每次重新读取
 最多 128 个安全、非符号链接的 Profile 目录，每个 manifest 最多读取 256 KiB。手工损坏的
 manifest 会返回稳定的 `unreadable-manifest` 状态，不泄露解析器或文件系统细节，也不会让
@@ -64,7 +64,7 @@ Profile 修改设为禁用。Cordis fiber 卸载后，旧引用会失败。插�
 
 ## 展示、调用与传输
 
-公共展示面只有 `window.dshStudio`，不存在原始 preload、Tauri command 或 Shell bridge。
+公共展示面只有 `window.harnessDeck`，不存在原始 preload、Tauri command 或 Shell bridge。
 插件 UI 使用冻结的 SDK 合同调用。Studio 内部通过 `postMessage` 传输，但消息形状是实现
 细节，插件不得自己构造。
 
@@ -78,10 +78,10 @@ Studio 才接受调用。重启会改变来源并使等待中的调用失效。�
 上游 Host route、RPC、service 和 slot。桌面支持应该是可选适配器：
 
 ```js
-import { getDshStudio } from '@moresyl/dsh-studio-sdk'
+import { getHarnessDeck } from '@duyanta123/harnessdeck-sdk'
 
 export function mountDesktopAdapter(scope = window) {
-  const desktop = getDshStudio(scope)
+  const desktop = getHarnessDeck(scope)
   if (!desktop) return () => {}
   return desktop.onLink((link) => {
     scope.dispatchEvent(new CustomEvent('plugin:desktop-link', { detail: link }))

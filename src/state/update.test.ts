@@ -108,7 +108,7 @@ describe('dismissal', () => {
     useUpdate.getState().dismiss()
 
     expect(useUpdate.getState().dismissed).toBe('0.4.0')
-    expect(localStorage.setItem).toHaveBeenCalledWith('dsh-studio:update:dismissed', '0.4.0')
+    expect(localStorage.setItem).toHaveBeenCalledWith('harnessdeck:update:dismissed', '0.4.0')
     expect(isAnnounceable(useUpdate.getState())).toBe(false)
   })
 

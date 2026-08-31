@@ -9,7 +9,28 @@ pre-1.0 caveat that anything may still move.
 
 ## [Unreleased]
 
-## [0.1.0] — 2026-08-28
+### Changed
+
+- Completed the fork's brand takeover: the managed runtime integration is now
+  `@duyanta123/harnessdeck-integration` (staged under
+  `runtime-contract/harnessdeck-integration/`), and the launcher injects
+  `HARNESSDECK_*` environment values instead of the old `DSH_STUDIO_*` names.
+- The plugin SDK moved to `@duyanta123/harnessdeck-sdk`: `getHarnessDeck`,
+  `requireHarnessDeck`, `hasHarnessDeckCapability`, `onHarnessDeckWorkspaceDrop`,
+  `getHarnessDeckHost` and `requireHarnessDeckHost` replace the old names, and
+  the injected page contract is now `window.harnessDeck` with the Cordis Host
+  service published as `harnessDeckHost`.
+- Profile exports declare `harnessdeck-profile` (old `dsh-studio-profile`
+  exports are no longer importable), the remote-access cookie is
+  `harnessdeck_remote`, and the shell's persisted settings moved to
+  `harnessdeck.*` storage keys (theme, onboarding and presentation choices are
+  reset once).
+- Packaging and release automation now targets this repository: package
+  manifests are generated as `harnessdeck`/`HarnessDeck` artifacts, the Scoop
+  bucket entry point becomes `bucket/harnessdeck.json`, and release job names
+  follow the new product name.
+
+## [0.1.0](https://github.com/duyanta123/HarnessDeck/releases/tag/v0.1.0) — 2026-08-28
 
 ### Changed
 
@@ -750,7 +771,7 @@ CI but have not been run by a human yet.
 - **Release pipeline.** A tagged version is built by CI for Windows x64, Linux
   x64, macOS Apple Silicon and macOS Intel.
 
-[Unreleased]: https://github.com/Moresyl/dsh-studio/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/duyanta123/HarnessDeck/compare/v0.1.0...HEAD
 [0.8.0]: https://github.com/Moresyl/dsh-studio/compare/v0.7.8...v0.8.0
 [0.7.8]: https://github.com/Moresyl/dsh-studio/compare/v0.7.7...v0.7.8
 [0.7.7]: https://github.com/Moresyl/dsh-studio/compare/v0.7.6...v0.7.7

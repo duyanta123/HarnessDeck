@@ -84,7 +84,7 @@ drift all stop the commit and require a new review.
 ## Desktop service contract — Protocol 3
 
 Pages served by the active loopback Harness origin can feature-detect the frozen
-`window.dshStudio` object. A browser tab does not receive it. The current
+`window.harnessDeck` object. A browser tab does not receive it. The current
 capability surface is:
 
 | Service     | Supported operations                                |
@@ -95,7 +95,7 @@ capability surface is:
 | `workspace` | native admission `validate`, folder-drop `onDrop`   |
 
 ```js
-const desktop = window.dshStudio
+const desktop = window.harnessDeck
 if (!desktop || desktop.protocol !== 3) return
 
 const roster = await desktop.profiles.list()

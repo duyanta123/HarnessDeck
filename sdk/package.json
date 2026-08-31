@@ -1,5 +1,5 @@
 {
-  "name": "@moresyl/dsh-studio-sdk",
+  "name": "@duyanta123/harnessdeck-sdk",
   "version": "0.1.0",
   "description": "Typed feature detection and Protocol 3 contracts for HarnessDeck plugins",
   "type": "module",

@@ -35,7 +35,7 @@ pub const SPEC: &str = "@deepseek-ai/dsh@0.1.1-rc.2";
 pub const PNPM_VERSION: &str = "11.7.0";
 pub const PNPM_SPEC: &str = "pnpm@11.7.0";
 const RUNTIME_SCHEMA: u8 = 2;
-const INTEGRATION_PACKAGE: &str = "@moresyl/dsh-studio-integration";
+const INTEGRATION_PACKAGE: &str = "@duyanta123/harnessdeck-integration";
 const OFFICIAL_REGISTRY: &str = "https://registry.npmjs.org/";
 const INSTALL_IDLE_TIMEOUT: Duration = Duration::from_secs(120);
 const INSTALL_TOTAL_TIMEOUT: Duration = Duration::from_secs(20 * 60);
@@ -88,13 +88,13 @@ impl Drop for ManagedInstallActivity {
     }
 }
 const INTEGRATION_MANIFEST: &[u8] =
-    include_bytes!("../../runtime-contract/dsh-studio-integration/package.json");
+    include_bytes!("../../runtime-contract/harnessdeck-integration/package.json");
 const INTEGRATION_PATCH: &[u8] =
-    include_bytes!("../../runtime-contract/dsh-studio-integration/cordis.patch.yml");
+    include_bytes!("../../runtime-contract/harnessdeck-integration/cordis.patch.yml");
 const INTEGRATION_NODE: &[u8] =
-    include_bytes!("../../runtime-contract/dsh-studio-integration/lib/index.js");
+    include_bytes!("../../runtime-contract/harnessdeck-integration/lib/index.js");
 const INTEGRATION_CLIENT: &[u8] =
-    include_bytes!("../../runtime-contract/dsh-studio-integration/lib/client.js");
+    include_bytes!("../../runtime-contract/harnessdeck-integration/lib/client.js");
 
 #[derive(Debug, Deserialize, Serialize)]
 struct InstallJournal {
@@ -384,7 +384,7 @@ where
 }
 
 fn stage_integration(target: &Path) -> Result<()> {
-    let root = target.join("dsh-studio-integration");
+    let root = target.join("harnessdeck-integration");
     std::fs::create_dir_all(root.join("lib"))
         .and_then(|_| std::fs::write(root.join("package.json"), INTEGRATION_MANIFEST))
         .and_then(|_| std::fs::write(root.join("cordis.patch.yml"), INTEGRATION_PATCH))
@@ -670,7 +670,7 @@ fn pnpm_entry(target: &Path) -> PathBuf {
 }
 
 fn integration_entry(target: &Path) -> PathBuf {
-    target.join("node_modules/@moresyl/dsh-studio-integration/lib/client.js")
+    target.join("node_modules/@duyanta123/harnessdeck-integration/lib/client.js")
 }
 
 fn runtime_schema(target: &Path) -> Option<u8> {
@@ -897,7 +897,7 @@ mod tests {
         )
         .expect("pnpm manifest");
         fs::write(pnpm.join("bin/pnpm.cjs"), "").expect("pnpm entry");
-        let integration = root.join("node_modules/@moresyl/dsh-studio-integration/lib");
+        let integration = root.join("node_modules/@duyanta123/harnessdeck-integration/lib");
         fs::create_dir_all(&integration).expect("integration directory");
         fs::write(integration.join("client.js"), "").expect("integration client");
         let picker = root
@@ -985,7 +985,7 @@ mod tests {
 
     #[test]
     fn silent_install_fixture() {
-        if std::env::var_os("DSH_STUDIO_SILENT_INSTALL_FIXTURE").is_some() {
+        if std::env::var_os("HARNESSDECK_SILENT_INSTALL_FIXTURE").is_some() {
             std::thread::sleep(Duration::from_secs(10));
         }
     }
@@ -997,7 +997,7 @@ mod tests {
             .arg("--exact")
             .arg("harness::install::tests::silent_install_fixture")
             .arg("--nocapture")
-            .env("DSH_STUDIO_SILENT_INSTALL_FIXTURE", "1")
+            .env("HARNESSDECK_SILENT_INSTALL_FIXTURE", "1")
             .stdin(std::process::Stdio::null())
             .stdout(std::process::Stdio::piped())
             .stderr(std::process::Stdio::piped());
@@ -1026,7 +1026,7 @@ mod tests {
         assert_eq!(dependencies["pnpm"], PNPM_VERSION);
         assert_eq!(
             dependencies[INTEGRATION_PACKAGE],
-            "file:dsh-studio-integration"
+            "file:harnessdeck-integration"
         );
         assert!(dependencies
             .values()
@@ -1081,7 +1081,7 @@ mod tests {
         ));
         let _ = fs::remove_dir_all(&root);
         write_runtime(&root, VERSION, true);
-        fs::remove_file(root.join("node_modules/@moresyl/dsh-studio-integration/lib/client.js"))
+        fs::remove_file(root.join("node_modules/@duyanta123/harnessdeck-integration/lib/client.js"))
             .expect("remove integration entry");
 
         let failure = require_expected_runtime(&root).expect_err("contract should fail");

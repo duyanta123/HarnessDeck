@@ -29,7 +29,7 @@ and pnpm tools on `PATH`. Packaged macOS and Linux builds recover only an
 allowlisted set of development variables from the login shell; credentials are
 never imported.
 
-Harness pages can feature-detect the frozen Protocol 3 `window.dshStudio` API for notifications, pickers, badges, deep links, profile listing/selection, exact-version plugin installation/removal, and native workspace admission/drop signals. The bridge accepts only the currently supervised loopback Harness origin and never exposes raw Tauri IPC or shell execution.
+Harness pages can feature-detect the frozen Protocol 3 `window.harnessDeck` API for notifications, pickers, badges, deep links, profile listing/selection, exact-version plugin installation/removal, and native workspace admission/drop signals. The bridge accepts only the currently supervised loopback Harness origin and never exposes raw Tauri IPC or shell execution.
 
 Harness Host plugins can separately feature-detect read-only Host Protocol 1 for
 the active Studio/Harness versions and a bounded Profile roster. It provides no

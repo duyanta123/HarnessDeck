@@ -305,7 +305,7 @@ mod tests {
 
     fn store(name: &str) -> (Store, PathBuf) {
         let base = std::env::temp_dir().join(format!(
-            "dsh-studio-profile-selection-{name}-{}",
+            "harnessdeck-profile-selection-{name}-{}",
             std::process::id()
         ));
         let _ = std::fs::remove_dir_all(&base);
