@@ -230,7 +230,11 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          previous="$(gh release list --repo "$GITHUB_REPOSITORY" --limit 20 --json tagName --jq '.[].tagName' | grep -Fxv "$GITHUB_REF_NAME" | head -n 1)"
+          # An empty listing makes the pipeline below exit nonzero, which under
+          # `set -e` aborts the whole job. The first release has no predecessor
+          # by construction, so a failed lookup must mean "no smoke" rather than
+          # "no release".
+          previous="$(gh release list --repo "$GITHUB_REPOSITORY" --limit 20 --json tagName --jq '.[].tagName' 2>/dev/null | grep -Fxv "$GITHUB_REF_NAME" | head -n 1 || true)"
           if [ -z "$previous" ]; then
             echo "No previous release exists; this is the only release where upgrade smoke is not applicable."
             exit 0
