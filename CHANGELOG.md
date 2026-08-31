@@ -11,6 +11,9 @@ pre-1.0 caveat that anything may still move.
 
 ### Changed
 
+- Pinned the managed runtime's package manager to pnpm 11.8.0, which fixes the
+  configDependencies path-traversal advisory (CVE-2026-59195) that affected
+  11.7.0.
 - Completed the fork's brand takeover: the managed runtime integration is now
   `@duyanta123/harnessdeck-integration` (staged under
   `runtime-contract/harnessdeck-integration/`), and the launcher injects

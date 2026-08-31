@@ -31,7 +31,7 @@ test('every release target maps to its exact native Node archive', () => {
   })
   assert.equal(HARNESS_PACKAGE, '@deepseek-ai/dsh')
   assert.equal(HARNESS_VERSION, '0.1.1-rc.2')
-  assert.equal(PNPM_VERSION, '11.7.0')
+  assert.equal(PNPM_VERSION, '11.8.0')
 })
 
 test('an unsupported target fails closed', () => {
@@ -39,10 +39,10 @@ test('an unsupported target fails closed', () => {
 })
 
 test('the offline package manager must execute as the pinned version', () => {
-  assert.doesNotThrow(() => requireExactVersion('11.7.0', PNPM_VERSION, 'offline pnpm'))
+  assert.doesNotThrow(() => requireExactVersion('11.8.0', PNPM_VERSION, 'offline pnpm'))
   assert.throws(
     () => requireExactVersion('10.30.2', PNPM_VERSION, 'offline pnpm'),
-    /resolved 10\.30\.2, expected 11\.7\.0/,
+    /resolved 10\.30\.2, expected 11\.8\.0/,
   )
 })
 

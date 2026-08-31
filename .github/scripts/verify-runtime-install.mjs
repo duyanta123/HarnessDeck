@@ -5,7 +5,7 @@ import { spawn } from 'node:child_process'
 import { verifyProfileBoot } from './runtime-profile-smoke.mjs'
 
 const expected = '0.1.1-rc.2'
-const expectedPnpm = '11.7.0'
+const expectedPnpm = '11.8.0'
 const directory = await mkdtemp(join(tmpdir(), 'dsh-runtime-contract-'))
 
 try {

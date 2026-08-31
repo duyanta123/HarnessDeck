@@ -11,6 +11,8 @@
 
 ### 变更
 
+- 托管运行时的包管理器固定为 pnpm 11.8.0，修复影响 11.7.0 的
+  configDependencies 路径穿越漏洞（CVE-2026-59195）。
 - 完成 fork 品牌收编：托管运行时集成更名为 `@duyanta123/harnessdeck-integration`
   （位于 `runtime-contract/harnessdeck-integration/`），启动器注入的环境变量由
   `DSH_STUDIO_*` 更名为 `HARNESSDECK_*`。

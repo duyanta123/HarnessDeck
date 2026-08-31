@@ -32,8 +32,8 @@ pub const PACKAGE: &str = "@deepseek-ai/dsh";
 /// release graph.
 pub const VERSION: &str = "0.1.1-rc.2";
 pub const SPEC: &str = "@deepseek-ai/dsh@0.1.1-rc.2";
-pub const PNPM_VERSION: &str = "11.7.0";
-pub const PNPM_SPEC: &str = "pnpm@11.7.0";
+pub const PNPM_VERSION: &str = "11.8.0";
+pub const PNPM_SPEC: &str = "pnpm@11.8.0";
 const RUNTIME_SCHEMA: u8 = 2;
 const INTEGRATION_PACKAGE: &str = "@duyanta123/harnessdeck-integration";
 const OFFICIAL_REGISTRY: &str = "https://registry.npmjs.org/";
