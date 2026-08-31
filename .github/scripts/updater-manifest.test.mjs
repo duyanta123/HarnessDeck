@@ -50,8 +50,7 @@ test('desktop and publishing workflows agree on the website fallback', async () 
   const config = JSON.parse(configText)
 
   assert.deepEqual(config.plugins.updater.endpoints, [
-    'https://github.com/Moresyl/dsh-studio/releases/latest/download/latest.json',
-    'https://moresyl.github.io/dsh-studio/latest.json',
+    'https://github.com/duyanta123/HarnessDeck/releases/latest/download/latest.json',
   ])
   assert.match(packageWorkflow, /website\/latest\.json/)
   assert.match(websiteWorkflow, /cp website\/latest\.json site\//)

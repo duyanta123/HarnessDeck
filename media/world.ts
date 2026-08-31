@@ -45,7 +45,7 @@ import type {
 
 /** Every path below hangs off this, so there is one place to check. */
 const HOME = 'C:\\Users\\dev'
-const APP_DATA = `${HOME}\\AppData\\Local\\dsh-studio`
+const APP_DATA = `${HOME}\\AppData\\Local\\harnessdeck`
 const HARNESS_DIR = `${APP_DATA}\\harness`
 const PROFILE = 'web'
 

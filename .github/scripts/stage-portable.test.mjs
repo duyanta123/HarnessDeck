@@ -7,11 +7,11 @@ import test from 'node:test'
 import { portableName, stagePortable } from './stage-portable.mjs'
 
 test('portable assets have a stable installer-distinct name', () => {
-  assert.equal(portableName('DSH Studio', '0.7.0'), 'DSH.Studio_0.7.0_x64-portable.exe')
+  assert.equal(portableName('HarnessDeck', '0.1.0'), 'HarnessDeck_0.1.0_x64-portable.exe')
 })
 
 test('portable names reject an invalid release version', () => {
-  assert.throws(() => portableName('DSH Studio', 'next'))
+  assert.throws(() => portableName('HarnessDeck', 'next'))
 })
 
 test('portable staging copies the only non-empty release executable', async () => {
@@ -21,7 +21,7 @@ test('portable staging copies the only non-empty release executable', async () =
     await writeFile(join(root, 'dsh-studio.exe'), 'portable-app')
     const name = await stagePortable(root, output)
 
-    assert.match(name, /^DSH\.Studio_\d+\.\d+\.\d+_x64-portable\.exe$/)
+    assert.match(name, /^HarnessDeck_\d+\.\d+\.\d+_x64-portable\.exe$/)
     assert.equal(await readFile(join(output, name), 'utf8'), 'portable-app')
   } finally {
     await rm(root, { recursive: true, force: true })
