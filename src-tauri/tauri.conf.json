@@ -20,7 +20,7 @@
   "bundle": {
     "active": true,
     "targets": "all",
-    "createUpdaterArtifacts": false,
+    "createUpdaterArtifacts": true,
     "category": "DeveloperTool",
     "shortDescription": "Native desktop shell for DeepSeek Harness",
     "longDescription": "HarnessDeck is a native desktop shell for the DeepSeek Harness that supervises the local service, reclaims stray tool processes, and ships first-class builds for Windows, macOS and Linux.",
