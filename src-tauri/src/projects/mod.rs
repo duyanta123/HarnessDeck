@@ -250,7 +250,7 @@ pub fn add(name: Option<String>, path: PathBuf, profile: Option<String>) -> Resu
         .projects
         .last()
         .map(|project| project.profile.clone())
-        .unwrap_or_else(|| crate::profiles::selected());
+        .unwrap_or_else(crate::profiles::selected);
     Store::managed().save(&registry)?;
     crate::profiles::select(&selected_profile)?;
     Ok(roster_of(registry))
@@ -491,10 +491,10 @@ fn auto_profile_name(project_name: &str) -> String {
         let lowered = character.to_ascii_lowercase();
         if lowered.is_ascii_lowercase() || lowered.is_ascii_digit() {
             slug.push(lowered);
-        } else if character.is_whitespace() || matches!(character, '-' | '_') {
-            if !slug.ends_with('-') {
-                slug.push('-');
-            }
+        } else if (character.is_whitespace() || matches!(character, '-' | '_'))
+            && !slug.ends_with('-')
+        {
+            slug.push('-');
         }
     }
     let mut slug = slug.trim_matches('-').to_string();
@@ -539,9 +539,12 @@ mod tests {
 
     #[test]
     fn a_project_name_is_cleaned() {
-        assert_eq!(clean_name(Some("  ".into()), Path::new("C:\\work")), "work");
+        // file_name() splits on the native separator, so the workspace has to
+        // be a path shape the platform running the suite actually produces.
+        let workspace = if cfg!(windows) { "C:\\work" } else { "/work" };
+        assert_eq!(clean_name(Some("  ".into()), Path::new(workspace)), "work");
         assert_eq!(
-            clean_name(Some("Office".into()), Path::new("C:\\work")),
+            clean_name(Some("Office".into()), Path::new(workspace)),
             "Office"
         );
         assert_eq!(auto_profile_name("My Project 2"), "proj-my-project-2");
