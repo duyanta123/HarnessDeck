@@ -19,7 +19,7 @@
   },
   "bundle": {
     "active": true,
-    "targets": "all",
+    "targets": ["nsis", "deb", "appimage", "dmg", "app"],
     "createUpdaterArtifacts": true,
     "category": "DeveloperTool",
     "shortDescription": "Native desktop shell for DeepSeek Harness",

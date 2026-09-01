@@ -15,9 +15,9 @@ Rust + Tauri 2 编写。它托管本地 `dsh` 服务、回收服务派生出的�
 [![Stars](https://img.shields.io/github/stars/duyanta123/HarnessDeck?style=flat-square&color=3560e8)](https://github.com/duyanta123/HarnessDeck/stargazers)
 [![License](https://img.shields.io/badge/license-MIT-3560e8?style=flat-square)](LICENSE)
 
-[![Windows 下载](https://img.shields.io/badge/Windows-.exe%20%C2%B7%20.msi-3560e8?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/duyanta123/HarnessDeck/releases/latest)
+[![Windows 下载](https://img.shields.io/badge/Windows-.exe-3560e8?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/duyanta123/HarnessDeck/releases/latest)
 [![macOS 下载](https://img.shields.io/badge/macOS-.dmg-1c1c1e?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/duyanta123/HarnessDeck/releases/latest)
-[![Linux 下载](https://img.shields.io/badge/Linux-.AppImage%20%C2%B7%20.deb%20%C2%B7%20.rpm-0e9e74?style=for-the-badge&logo=linux&logoColor=white)](https://github.com/duyanta123/HarnessDeck/releases/latest)
+[![Linux 下载](https://img.shields.io/badge/Linux-.AppImage%20%C2%B7%20.deb-0e9e74?style=for-the-badge&logo=linux&logoColor=white)](https://github.com/duyanta123/HarnessDeck/releases/latest)
 
 每个安装包不到 4 MB · [全部产物与校验和](#安装) · [English](README.md)
 
@@ -175,17 +175,16 @@ flowchart LR
 
 ## 安装
 
-到 [Releases] 下载对应平台的安装包。每一个打了 tag 的版本都由 CI 构建五个目标：
+到 [Releases] 下载对应平台的安装包。每一个打了 tag 的版本都由 CI 构建四个目标：
 
-| 平台                | 产物                                          |
-| ------------------- | --------------------------------------------- |
-| Windows x64         | `.exe`（NSIS）、`.msi` 与独立 `-portable.exe` |
-| macOS Apple Silicon | `.dmg`                                        |
-| macOS Intel         | `.dmg`                                        |
-| macOS 通用版        | 一个 `.dmg` 同时支持 Intel 与 Apple 芯片      |
-| Linux x64           | `.AppImage`、`.deb`、`.rpm`                   |
+| 平台                | 产物                                         |
+| ------------------- | -------------------------------------------- |
+| Windows x64         | `.exe`（NSIS，另附完整离线版 `.exe`）        |
+| macOS Apple Silicon | `.dmg`（另附完整离线版 `.dmg`）              |
+| macOS 通用版        | 一个 `.dmg` 同时支持 Intel 与 Apple 芯片     |
+| Linux x64           | `.AppImage`、`.deb`（另附完整离线版 `.deb`） |
 
-macOS 通用版为轻量版。完整离线版内含原生 Node runtime，因此继续按芯片架构分别提供。
+完整离线版内含原生 Node runtime，因此继续按芯片架构分别提供。
 
 也可以走包管理器。所有清单都放在 [`packaging/`](packaging) 下，
 并且是从一个真实 release 生成的——里面的版本号和 SHA-256 从来不是手打的：
@@ -240,7 +239,7 @@ registry——[`packaging/README.md`](packaging/README.md) 里逐条写明了每
 | 独立于 renderer 的启动恢复         | ✅ 静态原生重试/诊断/退出                                |
 | 只读 Host 插件合同                 | ✅ Host Protocol 1，不开放包管理或命令权限               |
 | 静默自更新                         | ⏳ 计划中                                                |
-| 打包发布                           | ✅ Windows 安装/便携版、Linux、macOS 原生/通用版自动构建 |
+| 打包发布                           | ✅ Windows NSIS、Linux、macOS 原生/通用版自动构建 |
 
 ## 设计取舍
 

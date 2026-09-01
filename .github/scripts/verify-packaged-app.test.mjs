@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { isAbsolute, resolve } from 'node:path'
 import test from 'node:test'
 
-import { resolveBundleRoot, rpmExtractArgs } from './verify-packaged-app.mjs'
+import { resolveBundleRoot } from './verify-packaged-app.mjs'
 
 test('resolves the bundle root before smoke tests change their working directory', () => {
   const root = resolveBundleRoot('src-tauri/target/release/bundle')
@@ -12,18 +12,4 @@ test('resolves the bundle root before smoke tests change their working directory
 
 test('rejects a missing bundle root', () => {
   assert.throws(() => resolveBundleRoot(), /usage:/)
-})
-
-test('passes RPM paths with spaces directly to libarchive', () => {
-  assert.deepEqual(rpmExtractArgs('/tmp/bundle/Harness Deck.rpm', '/tmp/rpm output'), [
-    '-xf',
-    '/tmp/bundle/Harness Deck.rpm',
-    '-C',
-    '/tmp/rpm output',
-  ])
-})
-
-test('rejects incomplete RPM extraction arguments', () => {
-  assert.throws(() => rpmExtractArgs('', '/tmp/rpm'), /required/)
-  assert.throws(() => rpmExtractArgs('/tmp/app.rpm', ''), /required/)
 })

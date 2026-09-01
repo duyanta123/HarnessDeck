@@ -28,17 +28,11 @@ export function resolveBundleRoot(root) {
 }
 
 async function verifyWindows(files) {
-  const msi = requireOne(files, (file) => file.toLowerCase().endsWith('.msi'), 'MSI')
   const nsis = requireOne(
     files,
     (file) => file.toLowerCase().endsWith('.exe') && !file.toLowerCase().endsWith('.sig'),
     'NSIS installer',
   )
-
-  const msiRoot = join(scratch, 'msi')
-  await run('msiexec.exe', ['/a', msi, '/qn', `TARGETDIR=${msiRoot}`])
-  await verifyOffline(msiRoot)
-  await smoke(await installedExecutable(msiRoot))
 
   const nsisRoot = join(scratch, 'nsis')
   // NSIS requires /D to be the final argument. spawn() passes it as one value,
@@ -55,7 +49,7 @@ async function verifyWindows(files) {
   if (process.env.DSH_PREVIOUS_INSTALLER) {
     await verifyWindowsUpgrade(process.env.DSH_PREVIOUS_INSTALLER, nsis)
   }
-  console.log('verified MSI extraction and NSIS installation by executing both packaged binaries')
+  console.log('verified NSIS installation by executing the packaged binary')
 }
 
 async function verifyWindowsUpgrade(previous, current) {
@@ -107,36 +101,24 @@ async function verifyMac(files) {
 }
 
 async function verifyLinux(files) {
-  const appImage = requireOne(files, (file) => file.toLowerCase().endsWith('.appimage'), 'AppImage')
   const deb = requireOne(files, (file) => file.toLowerCase().endsWith('.deb'), 'Debian package')
-  const rpm = requireOne(files, (file) => file.toLowerCase().endsWith('.rpm'), 'RPM package')
-
-  await chmod(appImage, 0o755)
-  const appImageRoot = join(scratch, 'appimage')
-  await run(appImage, ['--appimage-extract'], { cwd: appImageRoot, createCwd: true })
-  await verifyOffline(appImageRoot)
-  await smoke(await installedExecutable(appImageRoot))
 
   const debRoot = join(scratch, 'deb')
   await run('dpkg-deb', ['--extract', deb, debRoot])
   await verifyOffline(debRoot)
   await smoke(await installedExecutable(debRoot))
 
-  const rpmRoot = join(scratch, 'rpm')
-  await extractRpm(rpm, rpmRoot)
-  await verifyOffline(rpmRoot)
-  await smoke(await installedExecutable(rpmRoot))
-  console.log('extracted AppImage, DEB and RPM and executed every packaged application binary')
-}
-
-async function extractRpm(rpm, directory) {
-  await mkdir(directory, { recursive: true })
-  await run('bsdtar', rpmExtractArgs(rpm, directory))
-}
-
-export function rpmExtractArgs(rpm, directory) {
-  if (!rpm || !directory) throw new Error('RPM archive and extraction directory are required')
-  return ['-xf', rpm, '-C', directory]
+  // The standard build ships an AppImage alongside the .deb; the Full/Offline
+  // build produces only the .deb. Verify the AppImage when it is present.
+  const appImage = files.find((file) => file.toLowerCase().endsWith('.appimage'))
+  if (appImage) {
+    await chmod(appImage, 0o755)
+    const appImageRoot = join(scratch, 'appimage')
+    await run(appImage, ['--appimage-extract'], { cwd: appImageRoot, createCwd: true })
+    await verifyOffline(appImageRoot)
+    await smoke(await installedExecutable(appImageRoot))
+  }
+  console.log('extracted the Debian package and, when present, the AppImage; executed the packaged binaries')
 }
 
 async function installedExecutable(directory) {

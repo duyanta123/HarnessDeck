@@ -11,15 +11,15 @@ if (!root || !target) {
 
 const extensions = new Set(
   process.platform === 'win32'
-    ? ['.exe', '.msi']
+    ? ['.exe']
     : process.platform === 'darwin'
       ? ['.dmg']
-      : ['.AppImage', '.deb', '.rpm'],
+      : ['.deb'],
 )
 const files = (await walk(resolve(root))).filter(
   (file) => extensions.has(extname(file)) && !file.endsWith('.sig'),
 )
-const expected = process.platform === 'win32' ? 2 : process.platform === 'darwin' ? 1 : 3
+const expected = 1
 if (files.length !== expected) {
   throw new Error(
     `expected ${expected} Full package artifacts for ${target}, found ${files.length}`,

@@ -15,9 +15,9 @@ spawns, and never forks the upstream project to do it.
 [![Stars](https://img.shields.io/github/stars/duyanta123/HarnessDeck?style=flat-square&color=3560e8)](https://github.com/duyanta123/HarnessDeck/stargazers)
 [![License](https://img.shields.io/badge/license-MIT-3560e8?style=flat-square)](LICENSE)
 
-[![Download for Windows](https://img.shields.io/badge/Windows-.exe%20%C2%B7%20.msi-3560e8?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/duyanta123/HarnessDeck/releases/latest)
+[![Download for Windows](https://img.shields.io/badge/Windows-.exe-3560e8?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/duyanta123/HarnessDeck/releases/latest)
 [![Download for macOS](https://img.shields.io/badge/macOS-.dmg-1c1c1e?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/duyanta123/HarnessDeck/releases/latest)
-[![Download for Linux](https://img.shields.io/badge/Linux-.AppImage%20%C2%B7%20.deb%20%C2%B7%20.rpm-0e9e74?style=for-the-badge&logo=linux&logoColor=white)](https://github.com/duyanta123/HarnessDeck/releases/latest)
+[![Download for Linux](https://img.shields.io/badge/Linux-.AppImage%20%C2%B7%20.deb-0e9e74?style=for-the-badge&logo=linux&logoColor=white)](https://github.com/duyanta123/HarnessDeck/releases/latest)
 
 Under 4 MB per installer · [all artifacts and checksums](#install) · [简体中文](README.zh-CN.md)
 
@@ -193,19 +193,18 @@ pairing key appears in any of them.</sub>
 
 ## Install
 
-Grab an installer from [Releases]. Every tagged version is built by CI for five
+Grab an installer from [Releases]. Every tagged version is built by CI for four
 targets:
 
 | Platform            | Artifact                                                |
 | ------------------- | ------------------------------------------------------- |
-| Windows x64         | `.exe` (NSIS), `.msi`, and a standalone `-portable.exe` |
-| macOS Apple Silicon | `.dmg`                                                  |
-| macOS Intel         | `.dmg`                                                  |
+| Windows x64         | `.exe` (NSIS, plus a Full/Offline `.exe`)               |
+| macOS Apple Silicon | `.dmg` (plus a Full/Offline `.dmg`)                     |
 | macOS Universal     | One `.dmg` for both Intel and Apple Silicon             |
-| Linux x64           | `.AppImage`, `.deb`, `.rpm`                             |
+| Linux x64           | `.AppImage`, `.deb` (plus a Full/Offline `.deb`)        |
 
-The Universal macOS image is the lightweight edition. Full / Offline images stay
-architecture-specific because their embedded Node runtime is native code.
+Full / Offline images stay architecture-specific because their embedded Node
+runtime is native code.
 
 Or through a package manager. The manifests all live in [`packaging/`](packaging)
 and are generated from a real release, so the version and the SHA-256 in them are
@@ -266,7 +265,7 @@ about being unfinished.
 | Renderer-independent startup recovery          | ✅ static native retry/diagnostics/quit                             |
 | Read-only Host plugin contract                 | ✅ Host Protocol 1; no package or command authority                 |
 | Silent self-update                             | ⏳ planned                                                          |
-| Packaged releases                              | ✅ Windows installer + portable, Linux, macOS native + Universal    |
+| Packaged releases                              | ✅ Windows NSIS, Linux, macOS native + Universal              |
 
 ## Design notes
 
