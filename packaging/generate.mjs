@@ -28,6 +28,11 @@ import { normalizeUpdaterManifest } from './updater-manifest.mjs'
 const OWNER = 'duyanta123'
 const REPO = 'HarnessDeck'
 const IDENTIFIER = 'app.harnessdeck'
+/* Flatpak identifiers must carry two or more periods, and the Tauri bundle
+   identifier does not. The two only meet on the desktops that generate a
+   .desktop file, so this one reverse-domain the project instead — everything
+   else (paths inside the bundle, macOS preferences) keeps the Tauri name. */
+const FLATPAK_ID = 'io.github.duyanta123.harnessdeck'
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
 
 const SHORT_DESCRIPTION = 'Native desktop shell for DeepSeek Harness.'
@@ -328,20 +333,16 @@ function homebrew({ version, files }) {
 
 # ${GENERATED}
 cask "harnessdeck" do
-  version "${version}"
-
   # The release has no per-architecture Intel image since the artifacts were
   # slimmed to one format per platform, so Intel Macs install the universal
   # one while Apple silicon keeps its own.
-  on_arm do
-    url "https://github.com/${OWNER}/${REPO}/releases/download/v#{version}/HarnessDeck_#{version}_aarch64.dmg"
-    sha256 "${files.macArm.sha256}"
-  end
-  on_intel do
-    url "https://github.com/${OWNER}/${REPO}/releases/download/v#{version}/HarnessDeck_#{version}_universal.dmg"
-    sha256 "${files.macUniversal.sha256}"
-  end
+  arch arm: "aarch64", intel: "universal"
 
+  version "${version}"
+  sha256 arm:   "${files.macArm.sha256}",
+         intel: "${files.macUniversal.sha256}"
+
+  url "https://github.com/${OWNER}/${REPO}/releases/download/v#{version}/HarnessDeck_#{version}_#{arch}.dmg"
   name "HarnessDeck"
   desc "${SHORT_DESCRIPTION.replace(/\.$/, '')}"
   homepage "https://github.com/${OWNER}/${REPO}"
@@ -471,7 +472,7 @@ pkgname = harnessdeck-bin
  */
 function flatpak({ files }) {
   return `# ${GENERATED}
-app-id: ${IDENTIFIER}
+app-id: ${FLATPAK_ID}
 runtime: org.gnome.Platform
 runtime-version: '49'
 sdk: org.gnome.Sdk
@@ -507,23 +508,23 @@ modules:
       - ar x harnessdeck.deb
       - tar -xf data.tar.gz
       - install -Dm755 usr/bin/harnessdeck /app/bin/harnessdeck
-      - 'install -Dm644 "usr/share/applications/HarnessDeck.desktop" /app/share/applications/${IDENTIFIER}.desktop'
+      - 'install -Dm644 "usr/share/applications/HarnessDeck.desktop" /app/share/applications/${FLATPAK_ID}.desktop'
       # Flatpak resolves an icon by app-id, so both the file names and the Icon
       # key have to be the reverse-DNS name and not "harnessdeck".
-      - desktop-file-edit --set-icon=${IDENTIFIER} /app/share/applications/${IDENTIFIER}.desktop
+      - desktop-file-edit --set-icon=${FLATPAK_ID} /app/share/applications/${FLATPAK_ID}.desktop
       - |
         for size in 32x32 128x128 256x256@2; do
           install -Dm644 "usr/share/icons/hicolor/$size/apps/harnessdeck.png" \
-            "/app/share/icons/hicolor/$size/apps/${IDENTIFIER}.png"
+            "/app/share/icons/hicolor/$size/apps/${FLATPAK_ID}.png"
         done
-      - install -Dm644 ${IDENTIFIER}.metainfo.xml /app/share/metainfo/${IDENTIFIER}.metainfo.xml
+      - install -Dm644 ${FLATPAK_ID}.metainfo.xml /app/share/metainfo/${FLATPAK_ID}.metainfo.xml
     sources:
       - type: file
         url: ${files.linuxDeb.url}
         sha256: ${files.linuxDeb.sha256}
         dest-filename: harnessdeck.deb
       - type: file
-        path: ${IDENTIFIER}.metainfo.xml
+        path: ${FLATPAK_ID}.metainfo.xml
 `
 }
 
@@ -535,7 +536,7 @@ function metainfo({ version, date }) {
   return `<?xml version="1.0" encoding="UTF-8"?>
 <!-- ${GENERATED} -->
 <component type="desktop-application">
-  <id>${IDENTIFIER}</id>
+  <id>${FLATPAK_ID}</id>
   <name>HarnessDeck</name>
   <summary>${SHORT_DESCRIPTION.replace(/\.$/, '')}</summary>
 
@@ -552,7 +553,7 @@ function metainfo({ version, date }) {
     and offers a plugin marketplace backed by the npm registry.</p>
   </description>
 
-  <launchable type="desktop-id">${IDENTIFIER}.desktop</launchable>
+  <launchable type="desktop-id">${FLATPAK_ID}.desktop</launchable>
   <categories>
     <category>Development</category>
   </categories>
@@ -599,8 +600,8 @@ await emit(`packaging/winget/${OWNER}.HarnessDeck.yaml`, wingetVersion(release))
 await emit('packaging/homebrew/harnessdeck.rb', homebrew(release))
 await emit('packaging/aur/PKGBUILD', pkgbuild(release))
 await emit('packaging/aur/.SRCINFO', srcinfo(release))
-await emit(`packaging/flathub/${IDENTIFIER}.yml`, flatpak(release))
-await emit(`packaging/flathub/${IDENTIFIER}.metainfo.xml`, metainfo(release))
+await emit(`packaging/flathub/${FLATPAK_ID}.yml`, flatpak(release))
+await emit(`packaging/flathub/${FLATPAK_ID}.metainfo.xml`, metainfo(release))
 await emit('website/latest.json', release.updaterManifest)
 
 for (const path of written) console.log(`  ${path}`)
