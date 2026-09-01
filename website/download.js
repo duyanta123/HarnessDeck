@@ -20,7 +20,9 @@ const SUFFIXES = {
   'win-msi': '_x64_en-US.msi',
   'win-portable': '_x64-portable.exe',
   'mac-arm': '_aarch64.dmg',
-  'mac-intel': '_x64.dmg',
+  // No per-architecture Intel image is built anymore; Intel Macs get the
+  // universal dmg, which covers both architectures.
+  'mac-intel': '_universal.dmg',
   'mac-universal': '_universal.dmg',
   'linux-appimage': '_amd64.AppImage',
   'linux-deb': '_amd64.deb',

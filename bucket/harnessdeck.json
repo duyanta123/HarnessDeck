@@ -1,0 +1,47 @@
+{
+  "version": "0.1.0",
+  "description": "Native desktop shell for DeepSeek Harness.",
+  "homepage": "https://github.com/duyanta123/HarnessDeck",
+  "license": "MIT",
+  "notes": [
+    "HarnessDeck downloads a Node.js runtime on first run if the machine has none.",
+    "The harness listens on 127.0.0.1 only, on a port the kernel assigns.",
+    "The harness and any downloaded runtime live in %LOCALAPPDATA%\\harnessdeck, which uninstalling does not remove."
+  ],
+  "architecture": {
+    "64bit": {
+      "url": "https://github.com/duyanta123/HarnessDeck/releases/download/v0.1.0/HarnessDeck_0.1.0_x64-setup.exe#/setup.exe",
+      "hash": "580a02b409d99027dfa604d5c4ff8a413a68899d5bf74db2d3f0cb54de34d313"
+    }
+  },
+  "installer": {
+    "script": [
+      "Start-Process -FilePath \"$dir\\setup.exe\" -ArgumentList \"/S /NS /D=$dir\" -Wait",
+      "Remove-Item -Force \"$dir\\setup.exe\""
+    ]
+  },
+  "uninstaller": {
+    "script": [
+      "if (Test-Path \"$dir\\uninstall.exe\") {",
+      "  Start-Process -FilePath \"$dir\\uninstall.exe\" -ArgumentList \"/S _?=$dir\" -Wait",
+      "}"
+    ]
+  },
+  "bin": "harnessdeck.exe",
+  "shortcuts": [
+    [
+      "harnessdeck.exe",
+      "HarnessDeck"
+    ]
+  ],
+  "checkver": {
+    "github": "https://github.com/duyanta123/HarnessDeck"
+  },
+  "autoupdate": {
+    "architecture": {
+      "64bit": {
+        "url": "https://github.com/duyanta123/HarnessDeck/releases/download/v$version/HarnessDeck_$version_x64-setup.exe#/setup.exe"
+      }
+    }
+  }
+}

@@ -1,0 +1,21 @@
+pkgbase = harnessdeck-bin
+	pkgdesc = Native desktop shell for DeepSeek Harness
+	pkgver = 0.1.0
+	pkgrel = 1
+	url = https://github.com/duyanta123/HarnessDeck
+	arch = x86_64
+	license = MIT
+	depends = webkit2gtk-4.1
+	depends = gtk3
+	depends = libayatana-appindicator
+	optdepends = nodejs: use the system Node.js instead of letting the app fetch one
+	provides = harnessdeck
+	conflicts = harnessdeck
+	options = !strip
+	options = !emptydirs
+	source = harnessdeck-bin-0.1.0.deb::https://github.com/duyanta123/HarnessDeck/releases/download/v0.1.0/HarnessDeck_0.1.0_amd64.deb
+	source = harnessdeck-bin-0.1.0-LICENSE::https://raw.githubusercontent.com/duyanta123/HarnessDeck/v0.1.0/LICENSE
+	sha256sums = 300a8c096df30e0795f15f64cb138b261c826ac790d1f3724a83738f89c60365
+	sha256sums = e8e30e3836662c095c02493714dc65bd1876b3e5a343330b79ec101df6b89476
+
+pkgname = harnessdeck-bin

@@ -39,7 +39,10 @@ const DESCRIPTION =
 const WANTED = {
   windowsSetup: '_x64-setup.exe',
   macArm: '_aarch64.dmg',
-  macIntel: '_x64.dmg',
+  /* The release ships one universal dmg for Intel and Apple silicon alike.
+     The per-architecture Intel image was dropped when the artifacts were
+     slimmed to one format per platform. */
+  macUniversal: '_universal.dmg',
   linuxDeb: '_amd64.deb',
 }
 
@@ -325,13 +328,20 @@ function homebrew({ version, files }) {
 
 # ${GENERATED}
 cask "harnessdeck" do
-  arch arm: "aarch64", intel: "x64"
-
   version "${version}"
-  sha256 arm:   "${files.macArm.sha256}",
-         intel: "${files.macIntel.sha256}"
 
-  url "https://github.com/${OWNER}/${REPO}/releases/download/v#{version}/HarnessDeck_#{version}_#{arch}.dmg"
+  # The release has no per-architecture Intel image since the artifacts were
+  # slimmed to one format per platform, so Intel Macs install the universal
+  # one while Apple silicon keeps its own.
+  on_arm do
+    url "https://github.com/${OWNER}/${REPO}/releases/download/v#{version}/HarnessDeck_#{version}_aarch64.dmg"
+    sha256 "${files.macArm.sha256}"
+  end
+  on_intel do
+    url "https://github.com/${OWNER}/${REPO}/releases/download/v#{version}/HarnessDeck_#{version}_universal.dmg"
+    sha256 "${files.macUniversal.sha256}"
+  end
+
   name "HarnessDeck"
   desc "${SHORT_DESCRIPTION.replace(/\.$/, '')}"
   homepage "https://github.com/${OWNER}/${REPO}"
