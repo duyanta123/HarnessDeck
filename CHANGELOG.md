@@ -7,33 +7,22 @@ pre-1.0 caveat that anything may still move.
 
 [简体中文](CHANGELOG.zh-CN.md)
 
-## [Unreleased]
+## [0.1.0](https://github.com/duyanta123/HarnessDeck/releases/tag/v0.1.0) — 2026-09-01
 
-### Changed
+### Added
 
-- Pinned the managed runtime's package manager to pnpm 11.8.0, which fixes the
-  configDependencies path-traversal advisory (CVE-2026-59195) that affected
-  11.7.0.
+- Multi-project workspace support: the window hosts a roster of on-disk
+  projects, each bound to a DSH profile and persisted in `projects.json`;
+  switching projects restarts the supervised Harness into the right workspace.
 - Completed the fork's brand takeover: the managed runtime integration is now
   `@duyanta123/harnessdeck-integration` (staged under
-  `runtime-contract/harnessdeck-integration/`), and the launcher injects
-  `HARNESSDECK_*` environment values instead of the old `DSH_STUDIO_*` names.
-- The plugin SDK moved to `@duyanta123/harnessdeck-sdk`: `getHarnessDeck`,
-  `requireHarnessDeck`, `hasHarnessDeckCapability`, `onHarnessDeckWorkspaceDrop`,
-  `getHarnessDeckHost` and `requireHarnessDeckHost` replace the old names, and
-  the injected page contract is now `window.harnessDeck` with the Cordis Host
-  service published as `harnessDeckHost`.
-- Profile exports declare `harnessdeck-profile` (old `dsh-studio-profile`
-  exports are no longer importable), the remote-access cookie is
-  `harnessdeck_remote`, and the shell's persisted settings moved to
-  `harnessdeck.*` storage keys (theme, onboarding and presentation choices are
-  reset once).
-- Packaging and release automation now targets this repository: package
-  manifests are generated as `harnessdeck`/`HarnessDeck` artifacts, the Scoop
-  bucket entry point becomes `bucket/harnessdeck.json`, and release job names
-  follow the new product name.
-
-## [0.1.0](https://github.com/duyanta123/HarnessDeck/releases/tag/v0.1.0) — 2026-08-28
+  `runtime-contract/harnessdeck-integration/`), the plugin SDK moved to
+  `@duyanta123/harnessdeck-sdk`, and the launcher injects `HARNESSDECK_*`
+  environment values instead of the old `DSH_STUDIO_*` names.
+- Signing and packaging: the updater is armed with the fork's own minisign key
+  (`createUpdaterArtifacts` on), release jobs target this repository, and the
+  package manifests regenerate as `harnessdeck`/`HarnessDeck` artifacts (the
+  Scoop bucket entry point becomes `bucket/harnessdeck.json`).
 
 ### Changed
 
@@ -44,14 +33,17 @@ pre-1.0 caveat that anything may still move.
   `app.harnessdeck`; version has been reset to `0.1.0`.
 - Application data moves from `%LOCALAPPDATA%\dsh-studio` to
   `%LOCALAPPDATA%\harnessdeck` with existing data carried over by rename.
-- The updater is intentionally disabled for this phase: code stays wired but
-  `createUpdaterArtifacts` is off and the endpoint points at the new repository's
-  future `latest.json` placeholder.
+- Profile exports declare `harnessdeck-profile` (old `dsh-studio-profile`
+  exports are no longer importable), the remote-access cookie is
+  `harnessdeck_remote`, and the shell's persisted settings moved to
+  `harnessdeck.*` storage keys (theme, onboarding and presentation choices are
+  reset once).
 
-### Added
+### Secured
 
-- Multi-project workspace support: the window can host a roster of projects on
-  disk, each bound to a DSH profile and persisted in `projects.json`.
+- Pinned the managed runtime's package manager to pnpm 11.8.0, which fixes the
+  configDependencies path-traversal advisory (CVE-2026-59195) that affected
+  11.7.0 in the shipping runtime tree.
 
 ## [0.8.0] — 2026-08-25
 

@@ -7,26 +7,19 @@
 
 [English](CHANGELOG.md)
 
-## [未发布]
+## [0.1.0](https://github.com/duyanta123/HarnessDeck/releases/tag/v0.1.0) —— 2026-09-01
 
-### 变更
+### 新增
 
-- 托管运行时的包管理器固定为 pnpm 11.8.0，修复影响 11.7.0 的
-  configDependencies 路径穿越漏洞（CVE-2026-59195）。
+- 多项目工作区支持：窗口托管一组磁盘上的项目，每个项目绑定一个 DSH profile，
+  持久化到 `projects.json`；切换项目会重启被监管的 Harness 到对应工作区。
 - 完成 fork 品牌收编：托管运行时集成更名为 `@duyanta123/harnessdeck-integration`
-  （位于 `runtime-contract/harnessdeck-integration/`），启动器注入的环境变量由
-  `DSH_STUDIO_*` 更名为 `HARNESSDECK_*`。
-- 插件 SDK 迁移为 `@duyanta123/harnessdeck-sdk`：`getHarnessDeck`、`requireHarnessDeck`、
-  `hasHarnessDeckCapability`、`onHarnessDeckWorkspaceDrop`、`getHarnessDeckHost`、
-  `requireHarnessDeckHost` 取代旧名称；页面注入合同改为 `window.harnessDeck`，
-  Cordis Host 服务以 `harnessDeckHost` 发布。
-- Profile 导出声明改为 `harnessdeck-profile`（旧的 `dsh-studio-profile` 导出文件不再
-  可导入），远程访问 Cookie 更名为 `harnessdeck_remote`，壳的本地设置改用
-  `harnessdeck.*` 存储键（主题、引导与界面模式选择会重置一次）。
-- 打包与发布自动化改为面向本仓库：包管理清单按 `harnessdeck`/`HarnessDeck` 产物生成，
-  Scoop bucket 入口改为 `bucket/harnessdeck.json`，发布流水线任务名同步新品牌。
-
-## [0.1.0](https://github.com/duyanta123/HarnessDeck/releases/tag/v0.1.0) —— 2026-08-28
+  （位于 `runtime-contract/harnessdeck-integration/`），插件 SDK 迁移为
+  `@duyanta123/harnessdeck-sdk`，启动器注入的环境变量由 `DSH_STUDIO_*` 更名为
+  `HARNESSDECK_*`。
+- 签名与打包：更新器已启用本 fork 自有的 minisign 密钥（`createUpdaterArtifacts`
+  开启），发布流水线面向本仓库，包管理清单按 `harnessdeck`/`HarnessDeck` 产物生成
+  （Scoop bucket 入口改为 `bucket/harnessdeck.json`）。
 
 ### 变更
 
@@ -35,13 +28,14 @@
 - 深度链接协议改为 `harnessdeck://`，应用标识改为 `app.harnessdeck`，版本号重置为 `0.1.0`。
 - 应用数据目录由 `%LOCALAPPDATA%\dsh-studio` 迁移到 `%LOCALAPPDATA%\harnessdeck`，
   通过目录改名接管既有数据。
-- 本阶段更新器禁用保留：`createUpdaterArtifacts` 关闭，端点指向新仓库未来的
-  `latest.json` 占位地址，代码保留待转开源后启用。
+- Profile 导出声明改为 `harnessdeck-profile`（旧的 `dsh-studio-profile` 导出文件不再
+  可导入），远程访问 Cookie 更名为 `harnessdeck_remote`，壳的本地设置改用
+  `harnessdeck.*` 存储键（主题、引导与界面模式选择会重置一次）。
 
-### 新增
+### 安全
 
-- 多项目工作区支持：应用可管理多个本地项目，每个项目绑定一个 DSH profile，并持久化
-  到 `projects.json`。
+- 将托管运行时的包管理器固定为 pnpm 11.8.0，修复影响 11.7.0 的 configDependencies
+  路径穿越漏洞（CVE-2026-59195）——该版本位于运行时依赖树内。
 
 ## [0.8.0] —— 2026-08-25
 

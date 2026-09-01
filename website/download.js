@@ -9,7 +9,7 @@
  * working page, never a prerequisite for one.
  */
 
-const REPO = 'Moresyl/dsh-studio'
+const REPO = 'duyanta123/HarnessDeck'
 const API = `https://api.github.com/repos/${REPO}/releases/latest`
 
 /* Assets are matched on the tail of the filename rather than parsed, because the
@@ -85,7 +85,7 @@ function appleSilicon() {
  * visitor who comes back tomorrow should see tomorrow's release.
  */
 async function release() {
-  const cached = sessionStorage.getItem('dsh:release')
+  const cached = sessionStorage.getItem('harnessdeck:release')
   if (cached) {
     try {
       return JSON.parse(cached)
@@ -111,7 +111,7 @@ async function release() {
     files,
     checksums: checksums?.browser_download_url,
   }
-  sessionStorage.setItem('dsh:release', JSON.stringify(data))
+  sessionStorage.setItem('harnessdeck:release', JSON.stringify(data))
   return data
 }
 
