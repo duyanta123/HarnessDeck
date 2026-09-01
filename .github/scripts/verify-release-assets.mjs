@@ -22,7 +22,7 @@ const required = [
   ['Windows Full NSIS installer', (name) => /full-x86_64-pc-windows-msvc\.exe$/i.test(name)],
   ['Linux Full Debian package', (name) => /full-x86_64-unknown-linux-gnu\.deb$/i.test(name)],
   ['macOS Full Apple Silicon image', (name) => /full-aarch64-apple-darwin\.dmg$/i.test(name)],
-  ['Protocol 3 SDK package', (name) => /^duyanta123-harnessdeck-sdk-\d+\.\d+\.\d+\.tgz$/i.test(name)],
+  ['Protocol 3 SDK package', (name) => /^bugcome-harnessdeck-sdk-\d+\.\d+\.\d+\.tgz$/i.test(name)],
 ]
 for (const [label, matches] of required) {
   if (!names.some(matches)) throw new Error(`release is missing ${label}`)

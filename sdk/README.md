@@ -1,4 +1,4 @@
-# @duyanta123/harnessdeck-sdk
+# @bugcome/harnessdeck-sdk
 
 Typed, dependency-free feature detection for HarnessDeck Protocol 3. The SDK does
 not create a privileged channel: it only describes and validates the narrow
@@ -6,7 +6,7 @@ not create a privileged channel: it only describes and validates the narrow
 loopback Harness.
 
 ```js
-import { getHarnessDeck, hasHarnessDeckCapability } from '@duyanta123/harnessdeck-sdk'
+import { getHarnessDeck, hasHarnessDeckCapability } from '@bugcome/harnessdeck-sdk'
 
 const desktop = getHarnessDeck(window)
 if (desktop) {
@@ -37,7 +37,7 @@ roster. It deliberately cannot start commands, access native handles, install
 packages, or mutate Profiles.
 
 ```js
-import { getHarnessDeckHost } from '@duyanta123/harnessdeck-sdk'
+import { getHarnessDeckHost } from '@bugcome/harnessdeck-sdk'
 
 export const inject = []
 

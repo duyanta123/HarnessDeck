@@ -1,4 +1,4 @@
-import { getHarnessDeck, hasHarnessDeckCapability } from '@duyanta123/harnessdeck-sdk'
+import { getHarnessDeck, hasHarnessDeckCapability } from '@bugcome/harnessdeck-sdk'
 
 /** Mount an optional Desktop adapter without changing ordinary Harness use. */
 export async function mountDesktopExample(scope = window) {

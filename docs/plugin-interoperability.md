@@ -13,7 +13,7 @@ This contract keeps three different extension surfaces separate:
    generation identity and bounded Profile discovery. It does not expose raw
    native, command-runner, package-manager, or Profile-mutation authority.
 2. A **Harness Web Client plugin** runs in the supervised loopback page. It MAY
-   feature-detect Protocol 3 through `@duyanta123/harnessdeck-sdk`.
+   feature-detect Protocol 3 through `@bugcome/harnessdeck-sdk`.
 3. A **Studio-managed integration** is shipped and qualified with the pinned
    runtime. It is not a third-party privilege boundary and MUST fail closed when
    the expected upstream seam changes.
@@ -94,7 +94,7 @@ Host routes, RPC, services and slots for agent, session, model, tool and
 workspace behavior. Desktop support SHOULD be an optional adapter:
 
 ```js
-import { getHarnessDeck } from '@duyanta123/harnessdeck-sdk'
+import { getHarnessDeck } from '@bugcome/harnessdeck-sdk'
 
 export function mountDesktopAdapter(scope = window) {
   const desktop = getHarnessDeck(scope)

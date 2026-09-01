@@ -11,7 +11,7 @@
    提供只读 Host Protocol 1，用于读取当前代身份和有界 Profile 清单，但不开放原始原生
    能力、命令执行器、包管理器或 Profile 修改权限。
 2. **Harness Web Client 插件**运行在受监管回环页面中，可以通过
-   `@duyanta123/harnessdeck-sdk` 探测 Protocol 3。
+   `@bugcome/harnessdeck-sdk` 探测 Protocol 3。
 3. **Studio 托管集成**随锁定运行时一起交付和验证，不是第三方权限入口；预期上游 seam
    变化时必须关闭失败。
 
@@ -78,7 +78,7 @@ Studio 才接受调用。重启会改变来源并使等待中的调用失效。�
 上游 Host route、RPC、service 和 slot。桌面支持应该是可选适配器：
 
 ```js
-import { getHarnessDeck } from '@duyanta123/harnessdeck-sdk'
+import { getHarnessDeck } from '@bugcome/harnessdeck-sdk'
 
 export function mountDesktopAdapter(scope = window) {
   const desktop = getHarnessDeck(scope)
