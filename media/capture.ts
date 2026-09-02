@@ -326,13 +326,13 @@ const POSES: Record<string, () => Promise<void>> = {
   plugins: async () => {
     await mounted()
     await serve()
-    rail(1).click()
+    rail(3).click()
     await settle()
   },
   remote: async () => {
     await mounted()
     await serve()
-    rail(2).click()
+    rail(4).click()
     await settle()
     doorButton().click()
     await wait(500)
@@ -342,7 +342,7 @@ const POSES: Record<string, () => Promise<void>> = {
   about: async () => {
     await mounted()
     await serve()
-    rail(3).click()
+    rail(5).click()
     await settle()
   },
 }

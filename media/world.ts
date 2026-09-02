@@ -607,14 +607,69 @@ export function answerCommands(): void {
         /* Plugins */
         case 'plugin_state':
           return profile()
+        case 'plugin_sources':
+          // Two built-ins, matching the CatalogSource the pane draws. Without a
+          // real answer here the whole pane unmounts on arrival.
+          return [
+            {
+              id: 'dsh-hub',
+              label: 'DSH Hub',
+              kind: 'reviewed-http',
+              endpoint: 'https://dsh-hub.org/catalog.json',
+              builtIn: true,
+              active: true,
+            },
+            {
+              id: 'npm',
+              label: 'npm registry',
+              kind: 'npm',
+              endpoint: null,
+              builtIn: true,
+              active: false,
+            },
+          ]
+        case 'plugin_source_select':
+          return text(args, 'id') === 'dsh-hub'
+            ? null
+            : [
+                {
+                  id: 'dsh-hub',
+                  label: 'DSH Hub',
+                  kind: 'reviewed-http',
+                  endpoint: 'https://dsh-hub.org/catalog.json',
+                  builtIn: true,
+                  active: false,
+                },
+                {
+                  id: 'npm',
+                  label: 'npm registry',
+                  kind: 'npm',
+                  endpoint: null,
+                  builtIn: true,
+                  active: true,
+                },
+              ]
         case 'plugin_search': {
-          const query = text(args, 'query').trim().toLowerCase()
-          if (query.length === 0) return DISCOVER
-          return DISCOVER.filter(
-            (entry) =>
+          // The real backend answers with a page object, not a bare list — the
+          // store reads items/categories/total off it, so the mock has to shape
+          // one too.
+          const items = DISCOVER.filter((entry) => {
+            const query = text(args, 'query').trim().toLowerCase()
+            if (query.length === 0) return true
+            return (
               entry.name.toLowerCase().includes(query) ||
-              entry.description.toLowerCase().includes(query),
-          )
+              entry.description.toLowerCase().includes(query)
+            )
+          })
+          return {
+            items,
+            categories: ['dsh', 'productivity'],
+            total: items.length,
+            page: 0,
+            pageSize: 20,
+            hasMore: false,
+            indexedAt: null,
+          }
         }
         case 'plugin_detail':
           return beat(220).then(() => detailFor(text(args, 'name')))
