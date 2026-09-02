@@ -23,7 +23,7 @@ import {
 import { Button } from '@/components/Button'
 import { Empty } from '@/components/Empty'
 import { PaneHeader } from '@/components/PaneHeader'
-import { TabButton } from '@/components/TabButton'
+import { Segmented } from '@/components/Segmented'
 import { UsageReport } from '@/components/UsageReport'
 import { count, day, leaf, when } from '@/lib/format'
 import { t } from '@/lib/i18n'
@@ -206,18 +206,15 @@ export function SessionsPane() {
         title={t('sessions.title')}
         subtitle={tab === 'list' ? t('sessions.subtitle') : t('usage.subtitle')}
       >
-        <div className="flex items-center gap-0.5 rounded-control bg-canvas-deep p-0.5 hairline">
-          <TabButton
-            label={t('sessions.tab.list')}
-            active={tab === 'list'}
-            onClick={() => setTab('list')}
-          />
-          <TabButton
-            label={t('sessions.tab.usage')}
-            active={tab === 'usage'}
-            onClick={() => setTab('usage')}
-          />
-        </div>
+        <Segmented
+          label={t('sessions.title')}
+          options={[
+            { value: 'list', label: t('sessions.tab.list') },
+            { value: 'usage', label: t('sessions.tab.usage') },
+          ]}
+          value={tab}
+          onChange={setTab}
+        />
 
         <Button
           variant="secondary"
@@ -712,7 +709,7 @@ function Filter({
     const entries: MenuEntry[] = [
       {
         label: t('sessions.allProjects'),
-        icon: project === null ? Check : undefined,
+        checked: project === null,
         run: () => onPick(null),
       },
     ]
@@ -721,7 +718,7 @@ function Filter({
     for (const path of reach) {
       entries.push({
         label: leaf(path),
-        icon: path === project ? Check : undefined,
+        checked: path === project,
         run: () => onPick(path),
       })
     }

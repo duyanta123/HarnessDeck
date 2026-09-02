@@ -4,6 +4,7 @@ import { ClipboardCopy, Copy, Eraser, TerminalSquare } from 'lucide-react'
 import { t } from '@/lib/i18n'
 import type { LogLine } from '@/lib/ipc'
 import { logTone } from '@/lib/log-tone'
+import { ACCELERATOR } from '@/lib/platform'
 import { contextMenu, selectedText } from '@/state/menu'
 
 /**
@@ -61,6 +62,7 @@ export function LogConsole({ lines, onClear }: { lines: LogLine[]; onClear: () =
             {
               label: t('menu.copy'),
               icon: Copy,
+              shortcut: `${ACCELERATOR}C`,
               // Greyed rather than absent, so the menu does not change shape
               // between one right-click and the next.
               disabled: selection.length === 0,
@@ -77,6 +79,8 @@ export function LogConsole({ lines, onClear }: { lines: LogLine[]; onClear: () =
               label: t('menu.clearLog'),
               icon: Eraser,
               disabled: lines.length === 0,
+              // Destructive: it discards the one evidence this pane exists for.
+              danger: true,
               run: onClear,
             },
           ]

@@ -111,9 +111,21 @@ function Choice({
         'group flex w-full cursor-pointer flex-col gap-1 rounded-control border px-2.5 text-left transition duration-100 ease-[var(--ease-out-soft)]',
         detail ? 'py-2.5' : 'py-2',
         chosen
-          ? 'border-brand/55 bg-brand/8'
+          ? 'border-brand/60'
           : 'border-line bg-canvas-deep/40 hover:border-line-strong hover:bg-surface-2',
       ].join(' ')}
+      // The selected wash is the accent's two hues laid across the card, mixed
+      // with the theme's own ground so the light theme follows without a second
+      // recipe. Kept in a style because a gradient of two custom properties is
+      // not a class Tailwind can spell.
+      style={
+        chosen
+          ? {
+              background:
+                'linear-gradient(135deg, color-mix(in oklab, var(--color-brand) 10%, transparent), color-mix(in oklab, var(--color-brand-violet) 6%, transparent))',
+            }
+          : undefined
+      }
     >
       <span className="flex items-center gap-2">
         <Dot chosen={chosen} />
@@ -124,7 +136,10 @@ function Choice({
         </span>
 
         {chosen && (
-          <span className="ml-auto shrink-0 rounded-[4px] bg-brand/15 px-1.5 py-0.5 text-[10.5px] font-medium text-brand">
+          <span
+            className="ml-auto shrink-0 rounded-[4px] px-1.5 py-0.5 text-[10.5px] font-medium text-on-brand"
+            style={{ background: 'var(--gradient-accent)' }}
+          >
             {t('preset.current')}
           </span>
         )}

@@ -2,7 +2,7 @@ import type { MouseEvent, ReactNode } from 'react'
 import { ArrowUpCircle, Copy, FolderOpen, FolderSearch2, X } from 'lucide-react'
 import { revealItemInDir } from '@tauri-apps/plugin-opener'
 
-import { StatusDot } from '@/components/StatusDot'
+import { ThinkingOrb } from '@/components/ThinkingOrb'
 import { t } from '@/lib/i18n'
 import { formatVersion, type Environment, type Status } from '@/lib/ipc'
 import { labelOf, toneOf } from '@/lib/status'
@@ -42,7 +42,9 @@ export function StatusBar({
   return (
     <footer className="chrome relative z-20 flex h-[26px] shrink-0 items-stretch border-t border-line text-[11px] text-muted select-none">
       <Segment hint={labelOf(status)}>
-        <StatusDot tone={toneOf(status)} size={7} />
+        {/* The orb, at the smallest size the canvas can still draw: this is the
+            one status readout that is on screen for the app's whole life. */}
+        <ThinkingOrb tone={toneOf(status)} size={12} />
         {labelOf(status)}
       </Segment>
 

@@ -3,7 +3,7 @@ import { save as pickPath } from '@tauri-apps/plugin-dialog'
 import { Check, Coins, Download, Pencil, Wallet } from 'lucide-react'
 
 import { Empty } from '@/components/Empty'
-import { TabButton } from '@/components/TabButton'
+import { Segmented } from '@/components/Segmented'
 import { count, day } from '@/lib/format'
 import { describe } from '@/lib/errors'
 import { t } from '@/lib/i18n'
@@ -161,16 +161,15 @@ export function UsageReport({
   return (
     <div className="min-h-0 flex-1 overflow-y-auto">
       <div className="flex h-11 shrink-0 items-center gap-2 border-b border-line px-4">
-        <div className="flex items-center gap-0.5 rounded-control bg-canvas-deep p-0.5 hairline">
-          {SPANS.map((choice) => (
-            <TabButton
-              key={choice.days}
-              label={t(choice.label)}
-              active={span === choice.days}
-              onClick={() => setSpan(choice.days)}
-            />
-          ))}
-        </div>
+        <Segmented
+          label={t('usage.span')}
+          options={SPANS.map((choice) => ({
+            value: String(choice.days),
+            label: t(choice.label),
+          }))}
+          value={String(span)}
+          onChange={(next) => setSpan(Number(next))}
+        />
 
         <label className="ml-auto flex h-7 items-center gap-1.5 rounded-control border border-line bg-surface px-2 text-[10.5px] text-faint">
           {t('usage.monthlyBudget')}
@@ -205,19 +204,17 @@ export function UsageReport({
           )}
         </button>
 
-        <div
-          className="flex items-center gap-0.5 rounded-control bg-canvas-deep p-0.5 hairline"
-          data-hint={t('usage.currency')}
-        >
-          {CURRENCIES.map((one) => (
-            <TabButton
-              key={one}
-              label={`${SYMBOL[one]} ${one}`}
-              active={currency === one}
-              onClick={() => choose(one)}
-            />
-          ))}
-        </div>
+        <span data-hint={t('usage.currency')}>
+          <Segmented
+            label={t('usage.currency')}
+            options={CURRENCIES.map((one) => ({
+              value: one,
+              label: `${SYMBOL[one]} ${one}`,
+            }))}
+            value={currency}
+            onChange={choose}
+          />
+        </span>
       </div>
 
       {total === 0 ? (
@@ -229,6 +226,8 @@ export function UsageReport({
             symbol={symbol}
             tokens={total}
             sessions={within.length}
+            days={days}
+            settled={settled}
           />
 
           {monthlyBudget !== null && (
@@ -327,39 +326,130 @@ function Budget({
 
 /* -------------------------------------------------------------------------- */
 
-/** The four numbers somebody came here for, before any of the detail. */
+/** The number somebody came here for, over the trend it came from. */
 function Headline({
   money,
   symbol,
   tokens,
   sessions,
+  days,
+  settled,
 }: {
   money: number | null
   symbol: string
   tokens: number
   sessions: number
+  days: DayUsage[]
+  /** Every model has a price, so the spark reads money instead of tokens. */
+  settled: boolean
 }) {
+  const series = days.map((one) => (settled ? (one.cost ?? 0) : weigh(one.tokens)))
+  const today = series[series.length - 1] ?? 0
+  const peak = Math.max(...series, 0)
+  const average = series.length > 0 ? series.reduce((sum, one) => sum + one, 0) / series.length : 0
+  const figure = (value: number) => (settled ? cash(value, symbol) : count(Math.round(value)))
+
   return (
-    <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-      <Card
-        label={t('usage.total')}
-        value={money === null ? '—' : cash(money, symbol)}
-        note={money === null ? t('usage.unpriced') : undefined}
-        lead
-      />
-      <Card label={t('usage.tokens')} value={count(tokens)} />
-      <Card label={t('usage.sessions')} value={String(sessions)} />
-      <Card
-        label={t('usage.perSession')}
-        value={
-          sessions === 0
-            ? '—'
-            : money === null
-              ? count(Math.round(tokens / sessions))
-              : cash(money / sessions, symbol)
-        }
-      />
+    <div className="flex flex-col gap-2">
+      {/* The lead card: one big number, the shape behind it, and the three
+          facts that give the shape its scale along the bottom edge. */}
+      <div className="overflow-hidden rounded-panel border border-line bg-surface">
+        <div className="flex items-start justify-between gap-4 px-4 pt-3.5">
+          <div className="flex min-w-0 flex-col gap-2">
+            <p className="text-[10.5px] tracking-[0.04em] text-faint uppercase">
+              {t('usage.total')}
+            </p>
+            <p className="truncate text-[30px] leading-none font-semibold tracking-[-0.02em] tabular-nums text-text">
+              {money === null ? count(tokens) : cash(money, symbol)}
+            </p>
+            {money === null && (
+              <p className="text-[10.5px] leading-none text-faint">{t('usage.unpriced')}</p>
+            )}
+          </div>
+          <Spark values={series} />
+        </div>
+
+        <footer className="mt-3 flex h-8 items-center gap-2 border-t border-line bg-canvas-deep/40 px-4 text-[10.5px] text-faint">
+          <span className="font-medium text-brand tabular-nums">{figure(today)}</span>
+          <span>{t('usage.spark.today')}</span>
+          <span aria-hidden="true" className="ml-auto text-line-strong">
+            ·
+          </span>
+          <span className="tabular-nums">
+            {figure(peak)} {t('usage.spark.peak')}
+          </span>
+          <span aria-hidden="true" className="text-line-strong">
+            ·
+          </span>
+          <span className="tabular-nums">
+            {figure(average)} {t('usage.spark.avg')}
+          </span>
+        </footer>
+      </div>
+
+      <div className={`grid grid-cols-2 gap-2 ${money === null ? '' : 'sm:grid-cols-3'}`}>
+        {money !== null && <Card label={t('usage.tokens')} value={count(tokens)} />}
+        <Card label={t('usage.sessions')} value={String(sessions)} />
+        <Card
+          label={t('usage.perSession')}
+          value={
+            sessions === 0
+              ? '—'
+              : money === null
+                ? count(Math.round(tokens / sessions))
+                : cash(money / sessions, symbol)
+          }
+        />
+      </div>
     </div>
+  )
+}
+
+/**
+ * The span's shape, as an area under a line.
+ *
+ * Small and wordless on purpose — the numbers it is drawn from are printed on
+ * the edge below, and a chart that repeats them is a chart twice. Reads its
+ * colours from the palette, so the light theme follows without a second drawing.
+ */
+function Spark({ values }: { values: number[] }) {
+  const width = 148
+  const height = 46
+  if (values.length < 2) return null
+
+  const ceiling = Math.max(...values, 0)
+  const step = width / (values.length - 1)
+  const y = (value: number) => height - (ceiling > 0 ? (value / ceiling) * (height - 2) : 0) - 1
+  const line = values
+    .map((value, index) => `${index === 0 ? 'M' : 'L'}${(index * step).toFixed(2)},${y(value).toFixed(2)}`)
+    .join(' ')
+  const area = `${line} L${width},${height} L0,${height} Z`
+
+  return (
+    <svg
+      width={width}
+      height={height}
+      viewBox={`0 0 ${width} ${height}`}
+      preserveAspectRatio="none"
+      aria-hidden="true"
+      className="shrink-0"
+    >
+      <defs>
+        <linearGradient id="spark-fill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="var(--color-brand)" stopOpacity="0.26" />
+          <stop offset="100%" stopColor="var(--color-brand)" stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      {ceiling > 0 && <path d={area} fill="url(#spark-fill)" />}
+      <path
+        d={line}
+        fill="none"
+        stroke="var(--color-brand)"
+        strokeWidth={1.6}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   )
 }
 
@@ -367,22 +457,15 @@ function Card({
   label,
   value,
   note,
-  lead = false,
 }: {
   label: string
   value: string
   note?: string
-  lead?: boolean
 }) {
   return (
     <div className="rounded-panel border border-line bg-surface px-3 py-2.5">
       <p className="text-[10.5px] tracking-[0.04em] text-faint uppercase">{label}</p>
-      <p
-        className={[
-          'mt-1.5 truncate text-[19px] leading-none font-semibold tabular-nums',
-          lead ? 'text-brand' : 'text-text',
-        ].join(' ')}
-      >
+      <p className="mt-1.5 truncate text-[19px] leading-none font-semibold tabular-nums text-text">
         {value}
       </p>
       {note && <p className="mt-1 text-[10.5px] leading-none text-faint">{note}</p>}

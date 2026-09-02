@@ -4,7 +4,6 @@ import {
   useMemo,
   useRef,
   useState,
-  type KeyboardEvent,
   type MouseEvent,
   type ReactNode,
 } from 'react'
@@ -24,16 +23,17 @@ import {
   Plus,
   Trash2,
   TriangleAlert,
-  X,
   type LucideIcon,
 } from 'lucide-react'
 import { open as pickFile, save as pickPath } from '@tauri-apps/plugin-dialog'
 
+import { Badge, type BadgeTone } from '@/components/Badge'
 import { Button } from '@/components/Button'
-import { TabButton } from '@/components/TabButton'
+import { Empty } from '@/components/Empty'
+import { Modal } from '@/components/Modal'
+import { Segmented } from '@/components/Segmented'
 import { t } from '@/lib/i18n'
 import type { Comparison, Difference, Profile, Standing } from '@/lib/ipc'
-import { holdFocus, pressedBackdrop } from '@/lib/modal'
 import { ask } from '@/state/dialog'
 import { useHarness } from '@/state/harness'
 import { contextMenu, SEPARATOR, useMenu, type MenuEntry } from '@/state/menu'
@@ -94,8 +94,6 @@ export function ProfileManager({ onClose }: ProfileManagerProps) {
   const [form, setForm] = useState<Form | null>(null)
   const [pair, setPair] = useState<{ left: string; right: string } | null>(null)
 
-  const card = useRef<HTMLDivElement>(null)
-
   // Read again on arrival: this opens from a menu that may have been looking at
   // the roster for a while. The last error goes with the dialog rather than
   // waiting in the store for the next time it is opened.
@@ -103,16 +101,6 @@ export function ProfileManager({ onClose }: ProfileManagerProps) {
     void refresh()
     return settle
   }, [refresh, settle])
-
-  // Keys are answered by the card, so the card is where focus starts — and
-  // wherever it was, a row or the title bar's chip, is where it goes back to.
-  useEffect(() => {
-    const previous = document.activeElement
-    card.current?.focus()
-    return () => {
-      if (previous instanceof HTMLElement) previous.focus()
-    }
-  }, [])
 
   // Both sides are held loosely: a comparison of a profile that has since been
   // renamed or deleted is not a comparison, so a pick that is no longer a name
@@ -234,180 +222,135 @@ export function ProfileManager({ onClose }: ProfileManagerProps) {
     },
   ]
 
-  const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    // A form is the thing in front while one is open, so it is what Escape
-    // closes — the dialog behind it is still where the user meant to be.
-    if (event.key === 'Escape' && form !== null) {
-      event.stopPropagation()
-      setForm(null)
-      return
-    }
-    holdFocus(card.current, event, onClose)
-  }
-
-  const onBackdrop = (event: MouseEvent<HTMLDivElement>) => pressedBackdrop(event, onClose)
-
   return (
-    <div
-      role="presentation"
-      onMouseDown={onBackdrop}
-      onKeyDown={onKeyDown}
-      className="fixed inset-0 z-30 grid animate-fade place-items-center bg-canvas-deep/70 p-8 backdrop-blur-[2px]"
-    >
-      <div
-        ref={card}
-        role="dialog"
-        aria-modal="true"
-        aria-label={t('profile.title')}
-        tabIndex={-1}
-        className="flex max-h-full w-full max-w-[620px] animate-pop flex-col overflow-hidden rounded-panel border border-line-strong bg-surface shadow-lift outline-none"
-      >
-        <header className="flex shrink-0 items-start gap-3 border-b border-line px-4 py-3.5">
-          <span
-            aria-hidden="true"
-            className="grid size-9 shrink-0 place-items-center rounded-[8px] border border-line bg-surface-2 text-brand"
-          >
-            <Layers size={17} strokeWidth={1.9} />
-          </span>
-
-          <div className="min-w-0 flex-1 pt-px">
-            <h2 className="text-[13px] leading-snug font-semibold text-text">
-              {t('profile.title')}
-            </h2>
-            {/* The root is the tooltip rather than the line, because a profile
-                being a directory matters exactly once — when looking for it. */}
-            <p className="mt-1 truncate text-[11px] text-faint" data-hint={roster?.root}>
-              {t('profile.subtitle')}
+    <Modal
+      icon={Layers}
+      title={t('profile.title')}
+      subtitle={t('profile.subtitle')}
+      subtitleHint={roster?.root}
+      onClose={onClose}
+      closeLabel={t('profile.close')}
+      onEscape={(event) => {
+        // A form is the thing in front while one is open, so it is what Escape
+        // closes — the dialog behind it is still where the user meant to be.
+        if (event.key === 'Escape' && form !== null) {
+          event.stopPropagation()
+          setForm(null)
+          return true
+        }
+        return false
+      }}
+      width={620}
+      z={30}
+      footer={
+        working !== null ? (
+          <>
+            <Loader2 size={12} className="shrink-0 animate-spin text-brand" aria-hidden="true" />
+            <p className="min-w-0 flex-1 truncate font-mono text-[10.5px] text-faint">
+              {latest || working}
             </p>
+          </>
+        ) : (
+          <>
+            <Info size={12} strokeWidth={2} className="shrink-0 text-faint" aria-hidden="true" />
+            <p className="min-w-0 flex-1 truncate text-[11.5px] text-faint">
+              {t('profile.restartNote')}
+            </p>
+          </>
+        )
+      }
+      footerClassName="bg-canvas-deep/40"
+    >
+      <div className="flex h-11 shrink-0 items-center gap-2 border-b border-line px-4">
+        <Segmented
+          label={t('profile.manage')}
+          options={[
+            { value: 'list', label: t('profile.tab.list') },
+            { value: 'compare', label: t('profile.tab.compare') },
+          ]}
+          value={tab}
+          onChange={setTab}
+        />
+
+        {tab === 'list' ? (
+          <div className="ml-auto flex items-center gap-1.5">
+            <Button
+              variant="secondary"
+              onClick={() => void importProfile()}
+              disabled={working !== null}
+            >
+              <FileInput size={13} strokeWidth={2.2} aria-hidden="true" />
+              {t('profile.importFile')}
+            </Button>
+            <Button
+              variant="primary"
+              onClick={() => setForm({ kind: 'create' })}
+              disabled={working !== null}
+            >
+              <Plus size={14} strokeWidth={2.4} aria-hidden="true" />
+              {t('profile.new')}
+            </Button>
           </div>
+        ) : (
+          <span className="ml-auto shrink-0 text-[11.5px] text-faint tabular-nums">
+            {comparing
+              ? t('profile.comparing')
+              : comparison && comparison.differences > 0
+                ? comparison.differences === 1
+                  ? t('profile.differOne')
+                  : t('profile.differMany', { count: comparison.differences })
+                : ''}
+          </span>
+        )}
+      </div>
 
-          <button
-            type="button"
-            aria-label={t('profile.close')}
-            data-hint={t('profile.close')}
-            onClick={onClose}
-            className="-mt-0.5 -mr-1 grid size-[26px] shrink-0 place-items-center rounded-control text-faint transition-colors duration-100 hover:bg-surface-2 hover:text-text"
-          >
-            <X size={14} strokeWidth={2.2} aria-hidden="true" />
-          </button>
-        </header>
+      {form && (
+        <NameForm
+          key={identity(form)}
+          form={form}
+          busy={working !== null}
+          onCancel={() => setForm(null)}
+          onSubmit={submit}
+        />
+      )}
 
-        <div className="flex h-11 shrink-0 items-center gap-2 border-b border-line px-4">
-          <div className="flex items-center gap-0.5 rounded-control bg-canvas-deep p-0.5 hairline">
-            <TabButton
-              label={t('profile.tab.list')}
-              active={tab === 'list'}
-              onClick={() => setTab('list')}
-            />
-            <TabButton
-              label={t('profile.tab.compare')}
-              active={tab === 'compare'}
-              onClick={() => setTab('compare')}
-            />
-          </div>
+      {error ? (
+        <Notice tone="danger" icon={TriangleAlert}>
+          {error}
+        </Notice>
+      ) : (
+        note && (
+          <Notice tone="ok" icon={Check}>
+            {note}
+          </Notice>
+        )
+      )}
 
-          {tab === 'list' ? (
-            <div className="ml-auto flex items-center gap-1.5">
-              <Button
-                variant="secondary"
-                onClick={() => void importProfile()}
-                disabled={working !== null}
-              >
-                <FileInput size={13} strokeWidth={2.2} aria-hidden="true" />
-                {t('profile.importFile')}
-              </Button>
-              <Button
-                variant="primary"
-                onClick={() => setForm({ kind: 'create' })}
-                disabled={working !== null}
-              >
-                <Plus size={14} strokeWidth={2.4} aria-hidden="true" />
-                {t('profile.new')}
-              </Button>
-            </div>
-          ) : (
-            <span className="ml-auto shrink-0 text-[11.5px] text-faint tabular-nums">
-              {comparing
-                ? t('profile.comparing')
-                : comparison && comparison.differences > 0
-                  ? comparison.differences === 1
-                    ? t('profile.differOne')
-                    : t('profile.differMany', { count: comparison.differences })
-                  : ''}
-            </span>
-          )}
-        </div>
-
-        {form && (
-          <NameForm
-            key={identity(form)}
-            form={form}
-            busy={working !== null}
-            onCancel={() => setForm(null)}
-            onSubmit={submit}
+      {/* One height for both tabs: switching between them should move the
+          content, not the window. */}
+      <div className="flex min-h-[232px] flex-col overflow-hidden">
+        {tab === 'list' ? (
+          <List
+            profiles={roster?.profiles ?? []}
+            selected={roster?.selected ?? ''}
+            working={working}
+            onUse={(name) => void switchProfile(name)}
+            actions={actions}
+          />
+        ) : (
+          <Compare
+            names={names}
+            left={left}
+            right={right}
+            comparison={comparison}
+            comparing={comparing}
+            onPick={(side, name) =>
+              setPair(side === 'left' ? { left: name, right } : { left, right: name })
+            }
           />
         )}
-
-        {error ? (
-          <Notice tone="danger" icon={TriangleAlert}>
-            {error}
-          </Notice>
-        ) : (
-          note && (
-            <Notice tone="ok" icon={Check}>
-              {note}
-            </Notice>
-          )
-        )}
-
-        {/* One height for both tabs: switching between them should move the
-            content, not the window. */}
-        <div className="flex min-h-[232px] flex-col overflow-hidden">
-          {tab === 'list' ? (
-            <List
-              profiles={roster?.profiles ?? []}
-              selected={roster?.selected ?? ''}
-              working={working}
-              onUse={(name) => void switchProfile(name)}
-              actions={actions}
-            />
-          ) : (
-            <Compare
-              names={names}
-              left={left}
-              right={right}
-              comparison={comparison}
-              comparing={comparing}
-              onPick={(side, name) =>
-                setPair(side === 'left' ? { left: name, right } : { left, right: name })
-              }
-            />
-          )}
-        </div>
-
-        <footer className="flex shrink-0 items-center gap-2.5 border-t border-line bg-canvas-deep/40 px-4 py-3">
-          {working !== null ? (
-            <>
-              <Loader2 size={12} className="shrink-0 animate-spin text-brand" aria-hidden="true" />
-              <p className="min-w-0 flex-1 truncate font-mono text-[10.5px] text-faint">
-                {latest || working}
-              </p>
-            </>
-          ) : (
-            <>
-              <Info size={12} strokeWidth={2} className="shrink-0 text-faint" aria-hidden="true" />
-              <p className="min-w-0 flex-1 truncate text-[11.5px] text-faint">
-                {t('profile.restartNote')}
-              </p>
-            </>
-          )}
-
-          <Button variant="secondary" onClick={onClose}>
-            {t('profile.close')}
-          </Button>
-        </footer>
       </div>
-    </div>
+    </Modal>
   )
 }
 
@@ -461,7 +404,7 @@ function List({ profiles, selected, working, onUse, actions }: ListProps) {
                 >
                   {profile.name}
                 </span>
-                {profile.shipped && <Badge>{t('profile.builtinTag')}</Badge>}
+                {profile.shipped && <Badge tone="neutral">{t('profile.builtinTag')}</Badge>}
               </div>
 
               <div className="mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[11px] text-faint">
@@ -494,15 +437,15 @@ function List({ profiles, selected, working, onUse, actions }: ListProps) {
                 {t('profile.inUse')}
               </span>
             ) : (
-              <button
-                type="button"
+              <Button
+                variant="secondary"
+                size="sm"
                 onClick={() => onUse(profile.name)}
                 disabled={working !== null}
-                className="inline-flex h-[22px] shrink-0 items-center gap-1 rounded-[4px] border border-line-strong bg-surface-2 px-2 text-[11.5px] font-medium text-text transition duration-100 enabled:hover:brightness-[1.2] enabled:active:brightness-95 disabled:opacity-45"
               >
                 {busy && <Loader2 size={11} className="animate-spin" aria-hidden="true" />}
                 {t('profile.use')}
-              </button>
+              </Button>
             )}
 
             <button
@@ -636,12 +579,12 @@ function Row({ row }: { row: Difference }) {
 }
 
 /** How a standing reads, and how it is coloured. */
-const STANDING: Record<Standing, { label: string; tone: string }> = {
-  active: { label: t('profile.standing.active'), tone: 'bg-ok/15 text-ok' },
-  disabled: { label: t('profile.standing.disabled'), tone: 'bg-surface-2 text-faint' },
-  library: { label: t('profile.standing.library'), tone: 'bg-surface-2 text-muted' },
-  builtin: { label: t('profile.standing.builtin'), tone: 'bg-surface-2 text-faint' },
-  absent: { label: t('profile.standing.absent'), tone: '' },
+const STANDING: Record<Standing, { label: string; tone: BadgeTone }> = {
+  active: { label: t('profile.standing.active'), tone: 'ok' },
+  disabled: { label: t('profile.standing.disabled'), tone: 'neutral' },
+  library: { label: t('profile.standing.library'), tone: 'neutral' },
+  builtin: { label: t('profile.standing.builtin'), tone: 'neutral' },
+  absent: { label: t('profile.standing.absent'), tone: 'neutral' },
 }
 
 function Side({ standing, spec }: { standing: Standing; spec: string }) {
@@ -659,14 +602,7 @@ function Side({ standing, spec }: { standing: Standing; spec: string }) {
 
   return (
     <span className="flex min-w-0 flex-col items-start gap-0.5">
-      <span
-        className={[
-          'rounded-[4px] px-1.5 py-0.5 text-[10.5px] font-medium',
-          STANDING[standing].tone,
-        ].join(' ')}
-      >
-        {STANDING[standing].label}
-      </span>
+      <Badge tone={STANDING[standing].tone}>{STANDING[standing].label}</Badge>
       {spec && (
         <span className="max-w-full truncate font-mono text-[10px] text-faint tabular-nums">
           {spec}
@@ -692,7 +628,7 @@ function SidePicker({ label, value, options, onPick }: SidePickerProps) {
       box.bottom + 4,
       options.map((name) => ({
         label: name,
-        icon: name === value ? Check : undefined,
+        checked: name === value,
         run: () => onPick(name),
       })),
     )
@@ -854,14 +790,6 @@ function NameForm({ form, busy, onCancel, onSubmit }: NameFormProps) {
 
 /* -------------------------------------------------------------------------- */
 
-function Badge({ children }: { children: ReactNode }) {
-  return (
-    <span className="shrink-0 rounded-[4px] bg-surface-2 px-1.5 py-0.5 text-[10.5px] font-medium text-faint">
-      {children}
-    </span>
-  )
-}
-
 function Notice({
   tone,
   icon: Icon,
@@ -885,31 +813,6 @@ function Notice({
         aria-hidden="true"
       />
       <p className="selectable text-[11.5px] leading-relaxed break-all text-muted">{children}</p>
-    </div>
-  )
-}
-
-function Empty({
-  icon: Icon,
-  message,
-  hint,
-  spin = false,
-}: {
-  icon: LucideIcon
-  message: string
-  hint?: string
-  spin?: boolean
-}) {
-  return (
-    <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-2 px-6 py-10 text-center">
-      <Icon
-        size={22}
-        strokeWidth={1.4}
-        className={`text-faint opacity-60 ${spin ? 'animate-spin' : ''}`}
-        aria-hidden="true"
-      />
-      <p className="text-[12px] text-faint">{message}</p>
-      {hint && <p className="max-w-[320px] text-[11px] text-faint opacity-75">{hint}</p>}
     </div>
   )
 }

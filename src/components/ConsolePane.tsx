@@ -8,7 +8,7 @@ import { Button } from '@/components/Button'
 import { EnvironmentChecks, EnvironmentProgress } from '@/components/Environment'
 import { LogConsole } from '@/components/LogConsole'
 import { PresetPicker } from '@/components/PresetPicker'
-import { StatusDot } from '@/components/StatusDot'
+import { ThinkingOrb } from '@/components/ThinkingOrb'
 import { t } from '@/lib/i18n'
 import { formatVersion, isAtLeast, type NodeInstallation, type NodeVersion } from '@/lib/ipc'
 import { labelOf, toneOf } from '@/lib/status'
@@ -73,8 +73,10 @@ export function ConsolePane() {
               <h1 className="text-[15px] leading-none font-semibold tracking-[-0.01em] text-text">
                 HarnessDeck
               </h1>
-              <p className="flex items-center gap-1.5 text-[12px] leading-none text-muted">
-                <StatusDot tone={toneOf(status)} size={6} />
+              <p className="flex items-center gap-2 text-[12px] leading-none text-muted">
+                {/* The orb, not the dot: this is the one status line a reader
+                    has time to look at, so it is the one that gets to move. */}
+                <ThinkingOrb tone={toneOf(status)} size={15} />
                 {labelOf(status)}
               </p>
             </div>

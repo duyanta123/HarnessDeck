@@ -40,8 +40,14 @@ export function Switch({ on, busy = false, disabled = false, label, onChange }: 
         // so the track has to answer the pointer or there is nothing to confirm
         // the hit is landing.
         'enabled:hover:brightness-[1.14] enabled:active:brightness-95 disabled:opacity-45',
-        on ? 'bg-ok' : 'bg-surface-2 hairline',
+        on ? '' : 'bg-surface-2 hairline',
       ].join(' ')}
+      // The on state wears the accent as a fill rather than a flat colour: the
+      // same two-hue wash the lead metric and the selected preset carry, which
+      // is what makes every "this is on" in the window read as one family. In a
+      // style because a gradient of two custom properties is not a class
+      // Tailwind can spell.
+      style={on ? { background: 'var(--gradient-accent)' } : undefined}
     >
       {busy ? (
         <Loader2
@@ -53,7 +59,7 @@ export function Switch({ on, busy = false, disabled = false, label, onChange }: 
         <span
           aria-hidden="true"
           className={[
-            'absolute top-[2px] size-[14px] rounded-full shadow-panel transition-all duration-150 ease-[var(--ease-out-soft)]',
+            'absolute top-[2px] size-[14px] rounded-full shadow-lift transition-all duration-150 ease-[var(--ease-out-soft)]',
             on ? 'left-[16px] bg-canvas' : 'left-[2px] bg-faint',
           ].join(' ')}
         />

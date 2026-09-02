@@ -17,6 +17,14 @@ export interface MenuAction {
   disabled?: boolean
   /** Destructive, and coloured like it. */
   danger?: boolean
+  /** Drawn as a key chip at the right edge, the way a system menu annotates its accelerators. */
+  shortcut?: string
+  /**
+   * A choice the menu reports rather than an action that changes it: the row
+   * wears a check in the icon slot. Mutually exclusive sets — a profile, a
+   * project — compute this at the call site; the menu only draws it.
+   */
+  checked?: boolean
   run: () => void
 }
 

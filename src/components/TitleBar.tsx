@@ -7,7 +7,7 @@ import { ProjectSwitch } from '@/components/ProjectSwitch'
 import { ThemeSwitch } from '@/components/ThemeSwitch'
 import { t } from '@/lib/i18n'
 import * as ipc from '@/lib/ipc'
-import { drawsWindowControls, isMac } from '@/lib/platform'
+import { drawsWindowControls, isMac, ACCELERATOR, SHIFT } from '@/lib/platform'
 import { contextMenu, SEPARATOR } from '@/state/menu'
 import type { Presentation } from '@/state/presentation'
 
@@ -88,7 +88,7 @@ export function TitleBar({
     // one entry here that makes a window rather than changing this one. The
     // system's window menu has no equivalent to imitate, and this is the only
     // place a second window is reachable without knowing it exists.
-    { label: t('window.new'), run: () => void ipc.windowOpen() },
+    { label: t('window.new'), shortcut: `${ACCELERATOR}${SHIFT}N`, run: () => void ipc.windowOpen() },
     SEPARATOR,
     { label: t('window.minimize'), run: () => void appWindow.minimize() },
     {

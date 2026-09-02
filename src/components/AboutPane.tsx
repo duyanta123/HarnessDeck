@@ -196,10 +196,15 @@ export function AboutPane() {
                   <div className="h-1 overflow-hidden rounded-full bg-canvas-deep/70">
                     <div
                       className={[
-                        'h-full rounded-full bg-brand transition-[width] duration-150',
+                        'h-full rounded-full transition-[width] duration-150',
                         percent === null ? 'w-1/3 animate-pulse' : '',
                       ].join(' ')}
-                      style={percent === null ? undefined : { width: `${percent}%` }}
+                      style={{
+                        width: percent === null ? undefined : `${percent}%`,
+                        // A download is the app working, so the fill is the
+                        // accent's two-hue wash rather than a flat colour.
+                        background: 'var(--gradient-accent)',
+                      }}
                     />
                   </div>
                 </div>

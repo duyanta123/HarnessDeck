@@ -1,9 +1,12 @@
 import type { ComponentPropsWithRef, ReactNode } from 'react'
 
 type Variant = 'primary' | 'secondary' | 'ghost' | 'danger'
+type Size = 'md' | 'sm'
 
 interface ButtonProps extends ComponentPropsWithRef<'button'> {
   variant?: Variant
+  /** `md` is the one control height; `sm` is the 22px action a dense list row carries. */
+  size?: Size
   children: ReactNode
 }
 
@@ -20,7 +23,12 @@ interface ButtonProps extends ComponentPropsWithRef<'button'> {
  * control from lighting up when it is hovered.
  */
 const BASE =
-  'inline-flex h-[30px] shrink-0 items-center justify-center gap-1.5 rounded-control px-3 text-[12.5px] font-medium transition duration-100 ease-[var(--ease-out-soft)] select-none disabled:opacity-40'
+  'inline-flex shrink-0 items-center justify-center gap-1.5 rounded-control font-medium transition duration-100 ease-[var(--ease-out-soft)] select-none disabled:opacity-40'
+
+const SIZE: Record<Size, string> = {
+  md: 'h-[30px] px-3 text-[12.5px]',
+  sm: 'h-[22px] px-2 text-[11.5px]',
+}
 
 const VARIANT: Record<Variant, string> = {
   // Flat accent, dark ink. The one saturated element on the surface, which is
@@ -38,11 +46,17 @@ const VARIANT: Record<Variant, string> = {
   danger: 'bg-danger text-on-danger enabled:hover:brightness-[1.08] enabled:active:brightness-95',
 }
 
-export function Button({ variant = 'primary', className, children, ...rest }: ButtonProps) {
+export function Button({
+  variant = 'primary',
+  size = 'md',
+  className,
+  children,
+  ...rest
+}: ButtonProps) {
   return (
     <button
       type="button"
-      className={[BASE, VARIANT[variant], className].filter(Boolean).join(' ')}
+      className={[BASE, SIZE[size], VARIANT[variant], className].filter(Boolean).join(' ')}
       {...rest}
     >
       {children}

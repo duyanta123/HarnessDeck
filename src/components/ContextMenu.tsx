@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react'
+import { Check } from 'lucide-react'
 
 import { SEPARATOR, useMenu, type MenuAction, type MenuEntry } from '@/state/menu'
 
@@ -163,7 +164,7 @@ export function ContextMenu() {
             }}
             onMouseEnter={() => setActive(index)}
             className={[
-              'flex w-full items-center gap-2.5 px-2.5 py-[5px] text-left text-[12.5px] whitespace-nowrap',
+              'mx-1 flex w-[calc(100%-8px)] items-center gap-2.5 rounded-control px-2 py-[5px] text-left text-[12.5px] whitespace-nowrap',
               entry.disabled
                 ? 'cursor-default text-faint/60'
                 : entry.danger
@@ -177,11 +178,22 @@ export function ContextMenu() {
             ].join(' ')}
           >
             {/* A fixed gutter whether or not this row has an icon, so labels
-                line up the way they do in a system menu. */}
+                line up the way they do in a system menu. A checked entry wears
+                the check here: it is a choice the menu reports, which outranks
+                whatever icon it might otherwise carry. */}
             <span className="flex w-[14px] shrink-0 justify-center">
-              {entry.icon && <entry.icon size={13} strokeWidth={2} aria-hidden="true" />}
+              {entry.checked ? (
+                <Check size={13} strokeWidth={2.4} className="text-ok" aria-hidden="true" />
+              ) : (
+                entry.icon && <entry.icon size={13} strokeWidth={2} aria-hidden="true" />
+              )}
             </span>
-            {entry.label}
+            <span className="min-w-0 flex-1">{entry.label}</span>
+            {entry.shortcut && (
+              <kbd className="shrink-0 rounded-[4px] border border-line px-1.5 py-px font-sans text-[10.5px] text-faint">
+                {entry.shortcut}
+              </kbd>
+            )}
           </button>
         ),
       )}

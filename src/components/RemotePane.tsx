@@ -14,7 +14,7 @@ import {
 import { Button } from '@/components/Button'
 import { PaneHeader } from '@/components/PaneHeader'
 import { QrCode } from '@/components/QrCode'
-import { StatusDot } from '@/components/StatusDot'
+import { ThinkingOrb } from '@/components/ThinkingOrb'
 import { t } from '@/lib/i18n'
 import type { MessageKey } from '@/lib/i18n'
 import type { RemoteDevice, RemoteStatus } from '@/lib/ipc'
@@ -90,13 +90,10 @@ export function RemotePane() {
   return (
     <section className="flex min-h-0 flex-1 animate-rise flex-col">
       <PaneHeader title={t('remote.title')} subtitle={t('remote.subtitle')}>
-        <span className="flex items-center gap-1.5 text-[11.5px] text-muted">
-          <StatusDot
-            tone={{
-              color: isOpen ? 'var(--color-ok)' : 'var(--color-faint)',
-              live: false,
-            }}
-            size={6}
+        <span className="flex items-center gap-2 text-[11.5px] text-muted">
+          <ThinkingOrb
+            tone={{ color: isOpen ? 'var(--color-ok)' : 'var(--color-faint)', live: false }}
+            size={12}
           />
           {isOpen ? t('remote.state.open') : t('remote.state.closed')}
         </span>
@@ -246,10 +243,14 @@ function Countdown({ seconds, lifetime, onLapse }: CountdownProps) {
     <div className="flex w-full flex-col gap-1.5">
       <div className="h-[3px] overflow-hidden rounded-full bg-line">
         <div
-          className={`h-full rounded-full transition-[width] duration-1000 ease-linear ${
-            low ? 'bg-warn' : 'bg-brand'
-          }`}
-          style={{ width: `${Math.min(100, (left / lifetime) * 100)}%` }}
+          // The countdown wears the accent while there is time to spare and
+          // drops to the warning colour at the low-water mark, where "time is
+          // running out" outranks "this is the app working".
+          className={`h-full rounded-full transition-[width] duration-1000 ease-linear ${low ? 'bg-warn' : ''}`}
+          style={{
+            width: `${Math.min(100, (left / lifetime) * 100)}%`,
+            background: low ? undefined : 'var(--gradient-accent)',
+          }}
         />
       </div>
       <span

@@ -1,11 +1,4 @@
-import {
-  useEffect,
-  useRef,
-  useState,
-  type KeyboardEvent,
-  type MouseEvent,
-  type ReactNode,
-} from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import {
   Check,
   Download,
@@ -16,16 +9,15 @@ import {
   ShieldCheck,
   Trash2,
   TriangleAlert,
-  X,
 } from 'lucide-react'
 import { openUrl } from '@tauri-apps/plugin-opener'
 
 import { Button } from '@/components/Button'
+import { Modal } from '@/components/Modal'
 import { Switch } from '@/components/Switch'
 import { count, day } from '@/lib/format'
 import { t } from '@/lib/i18n'
 import type { InstalledPlugin } from '@/lib/ipc'
-import { holdFocus, pressedBackdrop } from '@/lib/modal'
 import { useHarness } from '@/state/harness'
 import { installedPlugin, usePlugins } from '@/state/plugins'
 
@@ -69,7 +61,6 @@ export function PluginDialog({ onRemove }: PluginDialogProps) {
   // supervisor's log — so the tail of that log is this dialog's progress line.
   const latest = useHarness((state) => state.lines.at(-1)?.line ?? '')
 
-  const card = useRef<HTMLDivElement>(null)
   const primary = useRef<HTMLButtonElement>(null)
   const [reviewing, setReviewing] = useState(false)
 
@@ -84,14 +75,6 @@ export function PluginDialog({ onRemove }: PluginDialogProps) {
   useEffect(() => {
     if (!loading) primary.current?.focus()
   }, [loading, selected])
-
-  // Wherever the caret was — a row, the search field — is where it goes back to.
-  useEffect(() => {
-    const previous = document.activeElement
-    return () => {
-      if (previous instanceof HTMLElement) previous.focus()
-    }
-  }, [])
 
   if (selected === null) return null
 
@@ -112,59 +95,97 @@ export function PluginDialog({ onRemove }: PluginDialogProps) {
       !detail.repositoryVerified ||
       !detail.integrityVerified)
 
-  const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => holdFocus(card.current, event, close)
-  const onBackdrop = (event: MouseEvent<HTMLDivElement>) => pressedBackdrop(event, close)
-
   return (
-    <div
-      role="presentation"
-      onMouseDown={onBackdrop}
-      onKeyDown={onKeyDown}
-      className="fixed inset-0 z-30 grid animate-fade place-items-center bg-canvas-deep/70 p-8 backdrop-blur-[2px]"
-    >
-      <div
-        ref={card}
-        role="dialog"
-        aria-modal="true"
-        aria-label={t('plugins.details')}
-        className="flex max-h-full w-full max-w-[540px] animate-pop flex-col overflow-hidden rounded-panel border border-line-strong bg-surface shadow-lift"
-      >
-        <header className="flex shrink-0 items-start gap-3 border-b border-line px-4 py-3.5">
-          <span
-            aria-hidden="true"
-            className="grid size-9 shrink-0 place-items-center rounded-[8px] border border-line bg-surface-2 text-brand"
-          >
-            <Package size={17} strokeWidth={1.9} />
-          </span>
+    <Modal
+      icon={Package}
+      title={selected}
+      breakTitle
+      subtitle={
+        <span className="flex flex-wrap items-baseline gap-x-2.5 gap-y-1 text-[11px] text-faint">
+          {detail && <span className="font-mono tabular-nums">{detail.version}</span>}
+          {listing?.publisher && <span className="truncate">{listing.publisher}</span>}
+          {here && (
+            <span className="inline-flex items-center gap-1 text-ok">
+              <Check size={10} strokeWidth={2.8} aria-hidden="true" />
+              {t('plugins.installed')}
+            </span>
+          )}
+        </span>
+      }
+      onClose={close}
+      closeLabel={t('plugins.close')}
+      width={540}
+      z={30}
+      footer={
+        <>
+          {/* While a package manager is running, the footer is where it reports
+              — the same tail the pane behind this shows, so closing the dialog
+              loses nothing. */}
+          <p className="min-w-0 flex-1 truncate font-mono text-[10.5px] text-faint">
+            {busy ? latest : ''}
+          </p>
 
-          <div className="min-w-0 flex-1 pt-px">
-            <h2 className="selectable text-[13px] leading-snug font-semibold break-all text-text">
-              {selected}
-            </h2>
-            <p className="mt-1 flex flex-wrap items-baseline gap-x-2.5 gap-y-1 text-[11px] text-faint">
-              {detail && <span className="font-mono tabular-nums">{detail.version}</span>}
-              {listing?.publisher && <span className="truncate">{listing.publisher}</span>}
-              {here && (
-                <span className="inline-flex items-center gap-1 text-ok">
-                  <Check size={10} strokeWidth={2.8} aria-hidden="true" />
-                  {t('plugins.installed')}
-                </span>
+          <Button variant="secondary" onClick={close}>
+            {t('plugins.close')}
+          </Button>
+
+          {here ? (
+            <Button
+              ref={primary}
+              variant="danger"
+              onClick={() => onRemove(selected)}
+              // An in-box bundle came with the profile template, so removing it
+              // from here would be editing someone else's file behind their
+              // back. The panel above says so, where a tooltip on a disabled
+              // button could not.
+              disabled={working !== null || here.builtin}
+            >
+              {busy ? (
+                <Loader2 size={13} className="animate-spin" />
+              ) : (
+                <Trash2 size={13} strokeWidth={2.2} />
               )}
-            </p>
-          </div>
-
-          <button
-            type="button"
-            aria-label={t('plugins.close')}
-            data-hint={t('plugins.close')}
-            onClick={close}
-            className="-mt-0.5 -mr-1 grid size-[26px] shrink-0 place-items-center rounded-control text-faint transition-colors duration-100 hover:bg-surface-2 hover:text-text"
-          >
-            <X size={14} strokeWidth={2.2} aria-hidden="true" />
-          </button>
-        </header>
-
-        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
+              {busy ? t('plugins.removing') : t('plugins.remove')}
+            </Button>
+          ) : (
+            <Button
+              ref={primary}
+              variant="primary"
+              onClick={() => {
+                if (!reviewing) {
+                  void preview(detail?.installSpec ?? selected).then((ready) => {
+                    if (ready) setReviewing(true)
+                  })
+                } else {
+                  void add().then((installed) => {
+                    // A failed one-shot confirmation must not leave an Install
+                    // button backed by a token the native side already used.
+                    // The next click starts a fresh, visible review.
+                    if (!installed) setReviewing(false)
+                  })
+                }
+              }}
+              disabled={working !== null || previewing || installBlocked}
+            >
+              {busy || previewing ? (
+                <Loader2 size={13} className="animate-spin" />
+              ) : (
+                <Download size={13} strokeWidth={2.3} />
+              )}
+              {busy
+                ? t('plugins.installing')
+                : previewing
+                  ? t('plugins.review.previewing')
+                  : reviewing
+                    ? t('plugins.review.installExact')
+                    : t('plugins.review.action')}
+            </Button>
+          )}
+        </>
+      }
+      footerClassName="bg-canvas-deep/40"
+    >
+      <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
           {loading ? (
             <div className="grid h-[168px] place-items-center">
               <Loader2 size={18} className="animate-spin text-faint" aria-hidden="true" />
@@ -339,75 +360,8 @@ export function PluginDialog({ onRemove }: PluginDialogProps) {
               )}
             </div>
           )}
-        </div>
-
-        <footer className="flex shrink-0 items-center gap-3 border-t border-line bg-canvas-deep/40 px-4 py-3">
-          {/* While a package manager is running, the footer is where it reports
-              — the same tail the pane behind this shows, so closing the dialog
-              loses nothing. */}
-          <p className="min-w-0 flex-1 truncate font-mono text-[10.5px] text-faint">
-            {busy ? latest : ''}
-          </p>
-
-          <Button variant="secondary" onClick={close}>
-            {t('plugins.close')}
-          </Button>
-
-          {here ? (
-            <Button
-              ref={primary}
-              variant="danger"
-              onClick={() => onRemove(selected)}
-              // An in-box bundle came with the profile template, so removing it
-              // from here would be editing someone else's file behind their
-              // back. The panel above says so, where a tooltip on a disabled
-              // button could not.
-              disabled={working !== null || here.builtin}
-            >
-              {busy ? (
-                <Loader2 size={13} className="animate-spin" />
-              ) : (
-                <Trash2 size={13} strokeWidth={2.2} />
-              )}
-              {busy ? t('plugins.removing') : t('plugins.remove')}
-            </Button>
-          ) : (
-            <Button
-              ref={primary}
-              variant="primary"
-              onClick={() => {
-                if (!reviewing) {
-                  void preview(detail?.installSpec ?? selected).then((ready) => {
-                    if (ready) setReviewing(true)
-                  })
-                } else {
-                  void add().then((installed) => {
-                    // A failed one-shot confirmation must not leave an Install
-                    // button backed by a token the native side already used.
-                    // The next click starts a fresh, visible review.
-                    if (!installed) setReviewing(false)
-                  })
-                }
-              }}
-              disabled={working !== null || previewing || installBlocked}
-            >
-              {busy || previewing ? (
-                <Loader2 size={13} className="animate-spin" />
-              ) : (
-                <Download size={13} strokeWidth={2.3} />
-              )}
-              {busy
-                ? t('plugins.installing')
-                : previewing
-                  ? t('plugins.review.previewing')
-                  : reviewing
-                    ? t('plugins.review.installExact')
-                    : t('plugins.review.action')}
-            </Button>
-          )}
-        </footer>
       </div>
-    </div>
+    </Modal>
   )
 }
 

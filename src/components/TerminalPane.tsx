@@ -5,6 +5,7 @@ import { Button } from '@/components/Button'
 import { PaneHeader } from '@/components/PaneHeader'
 import { StatusDot } from '@/components/StatusDot'
 import { t } from '@/lib/i18n'
+import { ACCELERATOR, SHIFT, isMac } from '@/lib/platform'
 import * as screens from '@/lib/screen'
 import { contextMenu, SEPARATOR } from '@/state/menu'
 import { useTerminals, type TerminalTab } from '@/state/terminals'
@@ -72,14 +73,25 @@ export function TerminalPane() {
     if (!active) return []
     const selection = screens.selection(active)
 
+    // The chords are the ones `lib/terminal-shortcuts.ts` actually answers:
+    // plain Ctrl+C on desktops, where a terminal keeps Shift for the copy.
+    const clipboardChord = (key: 'C' | 'V') =>
+      isMac ? `${ACCELERATOR}${key}` : `${ACCELERATOR}${SHIFT}${key}`
+
     return [
       {
         label: t('menu.copy'),
         icon: Copy,
+        shortcut: clipboardChord('C'),
         disabled: selection.length === 0,
         run: () => screens.copy(active),
       },
-      { label: t('menu.paste'), icon: ClipboardPaste, run: () => screens.paste(active) },
+      {
+        label: t('menu.paste'),
+        icon: ClipboardPaste,
+        shortcut: clipboardChord('V'),
+        run: () => screens.paste(active),
+      },
       SEPARATOR,
       { label: t('terminal.clear'), icon: Eraser, run: () => screens.clear(active) },
       {

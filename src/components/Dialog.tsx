@@ -84,7 +84,7 @@ export function Dialog() {
         aria-modal="true"
         aria-labelledby="dialog-title"
         aria-describedby="dialog-body"
-        className="w-full max-w-[404px] animate-pop rounded-panel border border-line-strong bg-surface p-5 shadow-lift"
+        className="lift-top w-full max-w-[404px] animate-pop rounded-panel border border-line-strong bg-surface p-6 shadow-lift"
       >
         <div className="flex gap-3.5">
           <span
@@ -121,7 +121,7 @@ export function Dialog() {
 
         {/* Cancel first, going through last — the order the platform this ships
             on puts them in, and the order the hand already expects. */}
-        <div className="mt-5 flex justify-end gap-2">
+        <div className="mt-6 flex justify-end gap-2.5">
           {notice ? (
             <>
               <Button variant="secondary" onClick={() => void copyError()}>

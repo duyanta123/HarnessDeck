@@ -13,8 +13,8 @@
  * has always had. That is what makes it safe to skip — and why the footer offers
  * to, on the left, where a control that opts out belongs.
  */
-import type { ReactNode } from 'react'
-import { Check, Loader2, Terminal } from 'lucide-react'
+import { useState, type ReactNode } from 'react'
+import { Check, Loader2, Terminal, TriangleAlert } from 'lucide-react'
 
 import { Ambient } from '@/components/Ambient'
 import { BrandMark } from '@/components/BrandMark'
@@ -41,6 +41,15 @@ export function Onboarding() {
   const provisioningNode = useHarness((state) => state.provisioningNode)
   const start = useHarness((state) => state.start)
 
+  // Which way the walk went, so the panel can arrive from that side. Every
+  // navigation in the guide goes through `move`, which is why the direction is
+  // one source of truth rather than two states to keep in agreement.
+  const [direction, setDirection] = useState<1 | -1>(1)
+  const move = (next: number) => {
+    setDirection(next > step ? 1 : -1)
+    go(next)
+  }
+
   const ready =
     environment !== null &&
     environment.node !== null &&
@@ -58,7 +67,7 @@ export function Onboarding() {
 
   const advance = () => {
     if (!last) {
-      go(step + 1)
+      move(step + 1)
       return
     }
     // Started and handed over in the same gesture. The guide closes without
@@ -67,6 +76,10 @@ export function Onboarding() {
     if (!running) void start()
     finish()
   }
+
+  // Remounting per step is what replays the directional slide; the key is the
+  // step, the class is the direction it came from.
+  const slide = direction === 1 ? 'animate-slide-forward' : 'animate-slide-back'
 
   return (
     <div className="flex min-h-0 flex-1 animate-rise">
@@ -86,25 +99,34 @@ export function Onboarding() {
 
           <p className="text-[12.5px] leading-relaxed text-muted">{t('guide.lead')}</p>
 
-          <ol className="flex flex-col gap-1">
+          <ol className="flex flex-col">
             {TITLES.map((title, index) => (
               <Rung
                 key={title}
                 index={index}
+                total={TITLES.length}
+                walked={index < step}
                 label={t(title)}
                 state={index < step ? 'done' : index === step ? 'current' : 'ahead'}
                 // Backwards only. Forwards is the button in the footer, which is
                 // the one that knows whether the step it is leaving is finished.
-                onSelect={index < step ? () => go(index) : undefined}
+                onSelect={index < step ? () => move(index) : undefined}
               />
             ))}
-          </ol>
-        </div>
+          </ol>        </div>
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
         <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-7 py-7">
-          <div className="flex w-full max-w-[540px] flex-col gap-5">
+          {/* Announced on every step change, for a reader the slide animation
+              tells nothing: the walk is also a claim about where they are. */}
+          <p aria-live="polite" className="sr-only">
+            {`${t('guide.progress', { current: step + 1, total: STEPS })} · ${t(TITLES[step] ?? 'guide.runtime.title')}`}
+          </p>
+
+          {/* Keyed on the step so the directional slide replays, the same
+              contract the workbench uses between panes. */}
+          <div key={step} className={`flex w-full max-w-[540px] flex-col gap-5 ${slide}`}>
             {step === 0 && (
               <Panel title={t('guide.runtime.title')} body={t('guide.runtime.body')}>
                 <EnvironmentChecks />
@@ -149,9 +171,35 @@ export function Onboarding() {
             {t('guide.skip')}
           </Button>
 
-          <div className="ml-auto flex items-center gap-2">
+          <div className="flex min-w-0 flex-1 items-center justify-center gap-2.5">
+            {/* The walk so far, as segments that fill rather than snap: a quiet
+                track with the accent washed over the ground covered, easing in
+                behind the click the same way the rail's connector does. The
+                caption beside it says the same thing in words, for anyone the
+                bars do not reach. */}
+            {TITLES.map((_, index) => (
+              <span
+                key={index}
+                aria-hidden="true"
+                className="h-1 w-7 overflow-hidden rounded-full bg-line"
+              >
+                <span
+                  className="block h-full w-full origin-left rounded-full transition-transform duration-300 ease-[var(--ease-out-soft)]"
+                  style={{
+                    background: 'var(--gradient-accent)',
+                    transform: `scaleX(${index <= step ? 1 : 0})`,
+                  }}
+                />
+              </span>
+            ))}
+            <span className="ml-1 text-[11px] text-faint tabular-nums">
+              {t('guide.progress', { current: step + 1, total: STEPS })}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2">
             {step > 0 && (
-              <Button variant="secondary" onClick={() => go(step - 1)}>
+              <Button variant="secondary" onClick={() => move(step - 1)}>
                 {t('guide.back')}
               </Button>
             )}
@@ -189,35 +237,42 @@ function Begin({ running, starting }: { running: boolean; starting: boolean }) {
   )
 }
 
-/** A step's heading, its one paragraph, and whatever it is about. */
+/** A step's heading, its one paragraph, and whatever it is about — on the same card material every pane wears. */
 function Panel({ title, body, children }: { title: string; body: string; children: ReactNode }) {
   return (
-    <>
+    <section className="rounded-panel border border-line bg-surface px-4 py-4">
       <header className="flex flex-col gap-2">
         <h2 className="text-[17px] leading-tight font-semibold tracking-[-0.015em] text-text">
           {title}
         </h2>
         <p className="text-[12.5px] leading-relaxed text-muted">{body}</p>
       </header>
-      <div className="flex flex-col gap-3">{children}</div>
-    </>
+      <div className="mt-3 flex flex-col gap-3">{children}</div>
+    </section>
   )
 }
 
 /**
- * One step in the rail.
+ * One step in the rail, and the segment of track below it.
  *
- * The number becomes a tick once the step is behind you, which is the whole of
- * the progress indicator: three rows, and the shape of the marker says where you
- * are without a bar that has to be interpreted.
+ * The number becomes a tick once the step is behind you, and the rail the
+ * markers sit on is drawn for real: a two-pixel line joins each marker to the
+ * next, walked in the accent as far as the user has come. The shape says where
+ * you are without a bar that has to be interpreted; the line says there is a
+ * path, which three loose dots never quite did.
  */
 function Rung({
   index,
+  total,
+  walked,
   label,
   state,
   onSelect,
 }: {
   index: number
+  total: number
+  /** The walk has passed this step, so the track below it is filled. */
+  walked: boolean
   label: string
   state: 'done' | 'current' | 'ahead'
   onSelect?: () => void
@@ -235,23 +290,34 @@ function Rung({
   }[state]
 
   return (
-    <li>
+    <li className="flex gap-2.5 pb-4 last:pb-0">
+      <div className="flex flex-col items-center">
+        <span
+          aria-hidden="true"
+          className={`grid size-[22px] shrink-0 place-items-center rounded-full border text-[11px] font-semibold tabular-nums ${marker}`}
+        >
+          {state === 'done' ? <Check size={12} strokeWidth={3} /> : index + 1}
+        </span>
+        {index < total - 1 && (
+          <span
+            aria-hidden="true"
+            className={`mt-1 w-[2px] flex-1 rounded-full transition-colors duration-300 ease-[var(--ease-out-soft)] ${walked ? 'bg-brand' : 'bg-line'}`}
+          />
+        )}
+      </div>
+
       <button
         type="button"
         onClick={onSelect}
         disabled={onSelect === undefined}
         aria-current={state === 'current' ? 'step' : undefined}
         className={[
-          'flex w-full items-center gap-2.5 rounded-control py-1.5 pr-2 pl-1 text-left transition duration-100',
-          onSelect ? 'cursor-pointer hover:bg-surface-2' : 'cursor-default',
+          'min-w-0 flex-1 pt-1.5 text-left text-[12.5px] font-medium transition duration-100',
+          onSelect ? 'cursor-pointer hover:text-text' : 'cursor-default',
+          text,
         ].join(' ')}
       >
-        <span
-          className={`grid size-[22px] shrink-0 place-items-center rounded-full border text-[11px] font-semibold tabular-nums ${marker}`}
-        >
-          {state === 'done' ? <Check size={12} strokeWidth={3} aria-hidden="true" /> : index + 1}
-        </span>
-        <span className={`min-w-0 truncate text-[12.5px] font-medium ${text}`}>{label}</span>
+        <span className="block truncate">{label}</span>
       </button>
     </li>
   )
@@ -301,8 +367,9 @@ function Failure() {
   if (!error) return null
 
   return (
-    <p className="selectable rounded-control border border-danger/30 bg-danger/10 px-2.5 py-2 text-[12px] leading-relaxed text-danger">
-      {error}
-    </p>
+    <div className="selectable flex items-start gap-2 rounded-control border border-danger/30 bg-danger/10 px-2.5 py-2 text-[12px] leading-relaxed text-danger">
+      <TriangleAlert size={13} strokeWidth={2.1} className="mt-[2px] shrink-0" aria-hidden="true" />
+      <span className="min-w-0 flex-1 break-words">{error}</span>
+    </div>
   )
 }

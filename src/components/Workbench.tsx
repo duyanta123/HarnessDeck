@@ -143,7 +143,9 @@ function RailItem({ icon: Icon, label, hint, active, badge, onClick }: RailItemP
       onClick={onClick}
       className={[
         'relative flex h-[52px] w-[52px] flex-col items-center justify-center gap-[5px] rounded-panel transition-colors duration-100',
-        active ? 'bg-surface-2 text-text' : 'text-faint hover:bg-surface-2/60 hover:text-muted',
+        active
+          ? 'raised bg-surface-2 text-text'
+          : 'text-faint hover:bg-surface-2/60 hover:text-muted',
       ].join(' ')}
     >
       {/* On the rail's edge rather than on the button, which is what makes it
@@ -156,7 +158,12 @@ function RailItem({ icon: Icon, label, hint, active, badge, onClick }: RailItemP
       )}
 
       <span className="relative">
-        <Icon size={17} strokeWidth={active ? 2.2 : 1.9} aria-hidden="true" />
+        <Icon
+          size={17}
+          strokeWidth={active ? 2.2 : 1.9}
+          className={active ? 'text-brand' : undefined}
+          aria-hidden="true"
+        />
         {badge && <span className="absolute -top-1 -right-2">{badge}</span>}
       </span>
 

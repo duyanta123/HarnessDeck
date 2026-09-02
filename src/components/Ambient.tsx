@@ -22,6 +22,15 @@ export function Ambient() {
           background: 'radial-gradient(circle, var(--color-brand) 0%, transparent 68%)',
         }}
       />
+      {/* A second wash, opposite corner and one step quieter, in the palette's
+          other hue. Two fixed corners give the ground a faint diagonal without
+          the drifting-blob landing-page look this layer once suffered from. */}
+      <div
+        className="absolute -right-40 -bottom-64 size-[34rem] rounded-full opacity-[0.07]"
+        style={{
+          background: 'radial-gradient(circle, var(--color-brand-violet) 0%, transparent 68%)',
+        }}
+      />
       <div
         className="absolute inset-0 opacity-[0.022] mix-blend-overlay"
         style={{ backgroundImage: NOISE }}

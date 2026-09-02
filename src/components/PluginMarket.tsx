@@ -21,12 +21,15 @@ import {
   X,
 } from 'lucide-react'
 
+import { Badge } from '@/components/Badge'
 import { Button } from '@/components/Button'
+import { Empty } from '@/components/Empty'
 import { PaneHeader } from '@/components/PaneHeader'
 import { PluginDialog } from '@/components/PluginDialog'
 import { CatalogSourcesDialog } from '@/components/CatalogSourcesDialog'
+import { Select } from '@/components/Select'
 import { Switch } from '@/components/Switch'
-import { TabButton } from '@/components/TabButton'
+import { Segmented } from '@/components/Segmented'
 import { count, day, filesize } from '@/lib/format'
 import { t } from '@/lib/i18n'
 import * as ipc from '@/lib/ipc'
@@ -179,32 +182,23 @@ export function PluginMarket() {
           subtitle={t('plugins.subtitle', { profile: profile?.profile ?? '' })}
           subtitleHint={profile?.profileDir}
         >
-          <div className="flex items-center gap-0.5 rounded-control bg-canvas-deep p-0.5 hairline">
-            <TabButton
-              label={t('plugins.tab.discover')}
-              active={tab === 'discover'}
-              onClick={() => setTab('discover')}
-            />
-            <TabButton
-              label={t('plugins.tab.installable')}
-              active={tab === 'installable'}
-              onClick={() => setTab('installable')}
-            />
-            <TabButton
-              label={
-                removable > 0
-                  ? `${t('plugins.tab.installed')} ${removable}`
-                  : t('plugins.tab.installed')
-              }
-              active={tab === 'installed'}
-              onClick={() => setTab('installed')}
-            />
-            <TabButton
-              label={t('plugins.tab.sources')}
-              active={tab === 'sources'}
-              onClick={() => setTab('sources')}
-            />
-          </div>
+          <Segmented
+            label={t('plugins.title')}
+            options={[
+              { value: 'discover', label: t('plugins.tab.discover') },
+              { value: 'installable', label: t('plugins.tab.installable') },
+              {
+                value: 'installed',
+                label:
+                  removable > 0
+                    ? `${t('plugins.tab.installed')} ${removable}`
+                    : t('plugins.tab.installed'),
+              },
+              { value: 'sources', label: t('plugins.tab.sources') },
+            ]}
+            value={tab}
+            onChange={setTab}
+          />
 
           {/* Beside the tabs rather than inside either one: this installs, so it
               belongs with discovery, but it is the only way in on a machine
@@ -223,7 +217,11 @@ export function PluginMarket() {
         {(tab === 'discover' || tab === 'installable') && (
           <div className="shrink-0 border-b border-line">
             <div className="flex h-11 items-center gap-2 px-4">
-              <select
+              <Select
+                label={t('plugins.source')}
+                compact
+                wrapperClassName="max-w-[150px]"
+                className="w-full"
                 value={activeSource?.id ?? 'npm'}
                 disabled={working !== null || sourceWorking}
                 onChange={(event) => {
@@ -231,15 +229,13 @@ export function PluginMarket() {
                   setPage(0)
                   void selectSource(event.target.value)
                 }}
-                aria-label={t('plugins.source')}
-                className="h-7 max-w-[150px] rounded-control border border-line bg-surface-2 px-2 text-[11px] text-muted outline-none focus:border-brand"
               >
                 {sources.map((source) => (
                   <option key={source.id} value={source.id}>
                     {source.label}
                   </option>
                 ))}
-              </select>
+              </Select>
               <button
                 type="button"
                 onClick={() => setManagingSources(true)}
@@ -306,14 +302,16 @@ export function PluginMarket() {
             </div>
 
             <div className="flex h-9 items-center gap-2 border-t border-line/70 px-4">
-              <select
+              <Select
+                label={t('plugins.category.all')}
+                compact
+                wrapperClassName="max-w-[170px]"
+                className="w-full"
                 value={category ?? ''}
                 onChange={(event) => {
                   setCategory(event.target.value || null)
                   setPage(0)
                 }}
-                aria-label={t('plugins.category.all')}
-                className="h-7 max-w-[170px] rounded-control border border-line bg-surface-2 px-2 text-[11px] text-muted outline-none focus:border-brand"
               >
                 <option value="">{t('plugins.category.all')}</option>
                 {categories.map((value) => (
@@ -321,22 +319,22 @@ export function PluginMarket() {
                     {value}
                   </option>
                 ))}
-              </select>
-              <select
+              </Select>
+              <Select
+                label={t('plugins.sort.label')}
+                compact
                 value={sort}
-                aria-label={t('plugins.sort.label')}
                 onChange={(event) => {
                   setSort(event.target.value as PluginSort)
                   setPage(0)
                 }}
-                className="h-7 rounded-control border border-line bg-surface-2 px-2 text-[11px] text-muted outline-none focus:border-brand"
               >
                 {(['relevance', 'updated', 'name', 'downloads'] as const).map((value) => (
                   <option key={value} value={value}>
                     {t(`plugins.sort.${value}`)}
                   </option>
                 ))}
-              </select>
+              </Select>
               <button
                 type="button"
                 onClick={() => {
@@ -647,18 +645,14 @@ function RowAction({
   }
 
   return (
-    <button
-      type="button"
-      onClick={onOpen}
-      className="mt-0.5 inline-flex h-[22px] shrink-0 items-center gap-1 rounded-[4px] border border-line-strong bg-surface-2 px-2 text-[11.5px] font-medium text-text transition duration-100 enabled:hover:brightness-[1.2] enabled:active:brightness-95"
-    >
+    <Button variant="secondary" size="sm" className="mt-0.5" onClick={onOpen}>
       {busy ? (
         <Loader2 size={11} className="animate-spin" aria-hidden="true" />
       ) : (
         <Download size={11} strokeWidth={2.4} aria-hidden="true" />
       )}
       {busy ? t('plugins.installing') : t('plugins.install')}
-    </button>
+    </Button>
   )
 }
 
@@ -723,13 +717,13 @@ function Installed({ plugins, initialized, working, onOpen, onToggle, onRemove }
 
               <div className="mt-1 flex items-center gap-1.5">
                 {plugin.disabled ? (
-                  <Badge tone="faint">{t('plugins.off')}</Badge>
+                  <Badge tone="neutral">{t('plugins.off')}</Badge>
                 ) : (
-                  <Badge tone={plugin.active ? 'ok' : 'faint'}>
+                  <Badge tone={plugin.active ? 'ok' : 'neutral'}>
                     {plugin.active ? t('plugins.layer') : t('plugins.library')}
                   </Badge>
                 )}
-                {plugin.builtin && <Badge tone="faint">{t('plugins.builtin')}</Badge>}
+                {plugin.builtin && <Badge tone="neutral">{t('plugins.builtin')}</Badge>}
                 {plugin.marketReceipt && <Badge tone="ok">{t('plugins.marketManaged')}</Badge>}
               </div>
             </div>
@@ -818,19 +812,6 @@ function Tile({ listing, muted = false }: { listing?: PluginListing; muted?: boo
   )
 }
 
-function Badge({ tone, children }: { tone: 'ok' | 'faint'; children: ReactNode }) {
-  return (
-    <span
-      className={[
-        'rounded-[4px] px-1.5 py-0.5 text-[10.5px] font-medium',
-        tone === 'ok' ? 'bg-ok/15 text-ok' : 'bg-surface-2 text-faint',
-      ].join(' ')}
-    >
-      {children}
-    </span>
-  )
-}
-
 function Notice({
   tone,
   icon: Icon,
@@ -854,15 +835,6 @@ function Notice({
         aria-hidden="true"
       />
       <p className="selectable text-[11.5px] leading-relaxed text-muted">{children}</p>
-    </div>
-  )
-}
-
-function Empty({ icon: Icon, message }: { icon: typeof Package; message: string }) {
-  return (
-    <div className="flex h-full flex-col items-center justify-center gap-2.5 px-6 py-12 text-center">
-      <Icon size={22} strokeWidth={1.4} className="text-faint opacity-60" aria-hidden="true" />
-      <p className="text-[12px] text-faint">{message}</p>
     </div>
   )
 }

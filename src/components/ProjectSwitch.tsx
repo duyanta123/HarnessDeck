@@ -1,5 +1,5 @@
 import { useEffect, type MouseEvent } from 'react'
-import { Check, ChevronDown, FolderKanban, Settings2 } from 'lucide-react'
+import { ChevronDown, FolderKanban, Settings2 } from 'lucide-react'
 
 import { t } from '@/lib/i18n'
 import { useHarness } from '@/state/harness'
@@ -42,7 +42,7 @@ export function ProjectSwitch({ onManage }: ProjectSwitchProps) {
   const open = (event: MouseEvent<HTMLButtonElement>) => {
     const entries: MenuEntry[] = roster.projects.map((project) => ({
       label: project.name,
-      icon: project.id === selected ? Check : undefined,
+      checked: project.id === selected,
       run: () => void switchProject(project.id),
     }))
     entries.push(SEPARATOR, { label: t('project.manage'), icon: Settings2, run: onManage })

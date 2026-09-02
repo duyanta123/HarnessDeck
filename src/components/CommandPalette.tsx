@@ -63,6 +63,19 @@ const LIMIT = 40
 /** What this prints for the new-window key, on either platform. */
 const NEW_WINDOW_KEYS = `${ACCELERATOR}${SHIFT}N`
 
+/** The caption over the run history, which belongs to the position in the list and not to any command. */
+const RECENT_GROUP = 'palette.group.recent' as const
+
+/** One row of what is drawn, with an optional caption override for the groups that are positional. */
+interface ShownRow {
+  command: Command
+  at: number[]
+  groupLabel?: MessageKey
+}
+
+/** Which caption a row answers to — its own group, unless a positional group overrode it. */
+const groupLabelOf = (row: ShownRow): MessageKey => row.groupLabel ?? row.command.group
+
 const THEMES: { id: Theme; icon: LucideIcon; label: MessageKey }[] = [
   { id: 'system', icon: SunMoon, label: 'theme.system' },
   { id: 'light', icon: Sun, label: 'theme.light' },
@@ -139,6 +152,8 @@ function Palette({
   const field = useRef<HTMLInputElement>(null)
   const [query, setQuery] = useState('')
   const [active, setActive] = useState(0)
+  const recents = usePalette((state) => state.recents)
+  const recordRecent = usePalette((state) => state.recordRecent)
 
   // Two lists this window can be opened without ever having visited the pane
   // that loads them, and a palette that offered no profiles because the manager
@@ -336,18 +351,39 @@ function Palette({
     chooseTheme,
   ])
 
-  /** What survived the query, best first, each with the letters it matched. */
-  const shown = useMemo(() => {
+  /**
+   * What survived the query, best first, each with the letters it matched.
+   *
+   * With nothing typed the list opens on what this user personally reaches
+   * for: the last commands they ran, resolved against the live roster — an id
+   * whose command no longer exists (a renamed profile, an uninstalled plugin)
+   * is dropped rather than drawn as a dead row — and excluded from the groups
+   * below, so nothing is offered twice in one frame.
+   */
+  const shown = useMemo<ShownRow[]>(() => {
     const asked = query.trim()
 
     // Nothing asked, so nothing is being looked for: the list is an offer, and an
     // offer of every session ever opened is a wall. The rest are one keystroke
     // away and the search below reaches all of them.
     if (asked === '') {
+      const recentCommands = recents
+        .map((id) => commands.find((command) => command.id === id))
+        .filter((command): command is Command => command !== undefined)
+      const recentIds = new Set(recentCommands.map((command) => command.id))
+
       let sessions = 0
-      return commands
-        .filter((command) => command.group !== 'palette.group.session' || ++sessions <= RECENT)
-        .map((command) => ({ command, at: [] as number[] }))
+      return [
+        ...recentCommands.map((command) => ({
+          command,
+          at: [] as number[],
+          groupLabel: RECENT_GROUP,
+        })),
+        ...commands
+          .filter((command) => !recentIds.has(command.id))
+          .filter((command) => command.group !== 'palette.group.session' || ++sessions <= RECENT)
+          .map((command) => ({ command, at: [] as number[] })),
+      ]
     }
 
     const ranked: { command: Command; score: number; at: number[] }[] = []
@@ -356,8 +392,11 @@ function Palette({
       if (match) ranked.push({ command, score: match.score, at: match.at })
     }
 
-    return ranked.sort((left, right) => right.score - left.score).slice(0, LIMIT)
-  }, [commands, query])
+    return ranked
+      .sort((left, right) => right.score - left.score)
+      .slice(0, LIMIT)
+      .map(({ command, at }) => ({ command, at }))
+  }, [commands, query, recents])
 
   // In the same frame it moves: a row that scrolls into view a frame late reads
   // as the list lagging behind the key. Keyed on the query as well, because a
@@ -416,11 +455,17 @@ function Palette({
     if (event.key === 'Enter') {
       if (!current) return
       event.preventDefault()
-      current.command.run()
+      execute(current.command)
     }
   }
 
   const onBackdrop = (event: MouseEvent<HTMLDivElement>) => pressedBackdrop(event, hide)
+
+  /** One path in, so a run always lands in the history the next open starts from. */
+  const execute = (command: Command) => {
+    recordRecent(command.id)
+    command.run()
+  }
 
   const grouped = query.trim() === ''
   const waiting = scanning && cards === null
@@ -440,8 +485,8 @@ function Palette({
         aria-label={t('palette.title')}
         className="flex h-fit max-h-[68vh] w-full max-w-[588px] animate-pop flex-col overflow-hidden rounded-panel border border-line-strong bg-surface shadow-lift"
       >
-        <div className="flex h-12 shrink-0 items-center gap-2.5 border-b border-line px-3.5">
-          <Search size={15} strokeWidth={2.1} className="shrink-0 text-faint" aria-hidden="true" />
+        <div className="flex h-[52px] shrink-0 items-center gap-2.5 border-b border-line px-4">
+          <Search size={16} strokeWidth={2.1} className="shrink-0 text-faint" aria-hidden="true" />
           <input
             ref={field}
             aria-label={t('palette.search')}
@@ -456,10 +501,13 @@ function Palette({
             value={query}
             onChange={(event) => ask(event.target.value)}
             placeholder={t('palette.search')}
-            className="min-w-0 flex-1 bg-transparent text-[13.5px] text-text outline-none placeholder:text-faint"
+            className="min-w-0 flex-1 bg-transparent text-[14px] text-text outline-none placeholder:text-faint"
           />
           <kbd className="shrink-0 rounded-[4px] border border-line px-1.5 py-px font-sans text-[10.5px] text-faint">
             {ACCELERATOR}K
+          </kbd>
+          <kbd className="shrink-0 rounded-[4px] border border-line px-1.5 py-px font-sans text-[10.5px] text-faint">
+            Esc
           </kbd>
         </div>
 
@@ -480,23 +528,27 @@ function Palette({
             aria-label={t('palette.title')}
             className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden py-1.5"
           >
-            {shown.map((row, index) => (
-              <Row
-                key={row.command.id}
-                command={row.command}
-                at={row.at}
-                // The heading belongs to the first row of its run rather than to
-                // a wrapper, so the list stays one flat set of children and the
-                // index the keyboard moves through is the index in the DOM.
-                heading={
-                  grouped && row.command.group !== shown[index - 1]?.command.group
-                    ? t(row.command.group)
-                    : undefined
-                }
-                active={index === active}
-                onHover={() => setActive(index)}
-              />
-            ))}
+            {shown.map((row, index) => {
+              const previous = shown[index - 1]
+              return (
+                <Row
+                  key={row.command.id}
+                  command={row.command}
+                  at={row.at}
+                  // The heading belongs to the first row of its run rather than to
+                  // a wrapper, so the list stays one flat set of children and the
+                  // index the keyboard moves through is the index in the DOM.
+                  heading={
+                    grouped && groupLabelOf(row) !== (previous && groupLabelOf(previous))
+                      ? t(groupLabelOf(row))
+                      : undefined
+                  }
+                  active={index === active}
+                  onHover={() => setActive(index)}
+                  onRun={() => execute(row.command)}
+                />
+              )
+            })}
           </div>
         )}
 
@@ -517,10 +569,15 @@ interface RowProps {
   heading?: string
   active: boolean
   onHover: () => void
+  /** Run through the palette, so the run is remembered by the next open. */
+  onRun: () => void
 }
 
-function Row({ command, at, heading, active, onHover }: RowProps) {
+function Row({ command, at, heading, active, onHover, onRun }: RowProps) {
   const Icon = command.icon
+  // A shortcut renders as keys rather than as text, which is how the eye tells
+  // "this row has a keystroke" from "this row is a session from March".
+  const keystroke = command.hint !== undefined && command.hint.startsWith(ACCELERATOR)
 
   return (
     // Presentational so the option below still reads as a direct child of the
@@ -529,7 +586,7 @@ function Row({ command, at, heading, active, onHover }: RowProps) {
     // already says in full what it does.
     <div role="presentation">
       {heading && (
-        <p aria-hidden="true" className="caption px-3.5 pt-2 pb-1">
+        <p aria-hidden="true" className="caption px-4 pt-2 pb-1">
           {heading}
         </p>
       )}
@@ -543,13 +600,22 @@ function Row({ command, at, heading, active, onHover }: RowProps) {
         // a click that turns out to be the wrong row costs nothing to correct.
         onMouseDown={(event) => {
           event.preventDefault()
-          command.run()
+          onRun()
         }}
         className={[
-          'mx-1.5 flex h-[34px] cursor-pointer items-center gap-2.5 rounded-control px-2 transition-colors duration-75',
+          'relative mx-1.5 flex h-9 cursor-pointer items-center gap-2.5 rounded-control px-2.5 transition-colors duration-75',
           active ? 'bg-surface-2 text-text' : 'text-muted',
         ].join(' ')}
       >
+        {/* You-are-here bar on the row's own edge, the same mark the nav rail
+            wears — one gesture for "this is the selection" across the shell. */}
+        {active && (
+          <span
+            aria-hidden="true"
+            className="absolute top-1/2 left-0 h-[16px] w-[2.5px] -translate-y-1/2 rounded-full bg-brand"
+          />
+        )}
+
         <Icon
           size={14}
           strokeWidth={2}
@@ -568,7 +634,13 @@ function Row({ command, at, heading, active, onHover }: RowProps) {
         )}
         {command.hint && (
           <span className="max-w-[42%] shrink-0 truncate text-[11px] text-faint">
-            {command.hint}
+            {keystroke ? (
+              <kbd className="rounded-[4px] border border-line px-1.5 py-px font-sans text-[10.5px] text-muted">
+                {command.hint}
+              </kbd>
+            ) : (
+              command.hint
+            )}
           </span>
         )}
       </div>

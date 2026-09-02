@@ -212,10 +212,10 @@ function NodeInstallProgress({ progress }: { progress: NodeProgress | null }) {
         <div
           className={
             fraction === null
-              ? 'h-full w-1/4 animate-drift rounded-full bg-brand'
-              : 'h-full rounded-full bg-brand transition-[width] duration-200 ease-[var(--ease-out-soft)]'
+              ? 'h-full w-1/4 animate-drift rounded-full'
+              : 'h-full rounded-full transition-[width] duration-200 ease-[var(--ease-out-soft)]'
           }
-          style={fraction === null ? undefined : { width: `${fraction * 100}%` }}
+          style={{ background: 'var(--gradient-accent)', width: fraction === null ? undefined : `${fraction * 100}%` }}
         />
       </div>
 
